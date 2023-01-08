@@ -1,17 +1,17 @@
 import { Pool } from "pg";
 import config from "../config";
+const dbMap: Record<string, string> = {
+  test: "TEST_",
+  dev: "DEV_",
+};
+const prefix = dbMap[config.NODE_ENV as string];
 
-const pool = new Pool({
-  user: config.user,
-  host: config.host,
-  database: config.database,
-  password: config.password,
-  port: parseInt(config.dbPort as string, 10),
-  max: 4,
+const db = new Pool({
+  host: config.env(`${prefix}DATABASE_HOST`),
+  user: config.env(`${prefix}DATABASE_USER`),
+  password: config.env(`${prefix}DATABASE_PASSWORD`),
+  database: config.env(`${prefix}DATABASE_NAME`),
+  port: parseInt(config.env(`${prefix}DATABASE_PORT`), 10),
 });
 
-pool.on("error", (error: Error) => {
-  console.log(error);
-});
-
-export default pool;
+export default db;

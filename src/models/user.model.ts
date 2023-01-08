@@ -3,7 +3,7 @@ import User from "../types/user.types";
 import bcrypt from "bcrypt";
 import config from "../config";
 
-const hashPassword = (password: string) => {
+const hashPassword = (password: string): string => {
   const salt = parseInt(config.salt as string, 10);
   return bcrypt.hashSync(`${password}${config.pepper}`, salt);
 };

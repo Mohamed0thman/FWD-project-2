@@ -1,27 +1,17 @@
 import dotnv from "dotenv";
 
 dotnv.config();
-const {
-  PORT,
-  NODE_ENV,
-  PGUSER,
-  PGHOST,
-  PGDATABASETest,
-  PGPORT,
-  PGPASSWORD,
-  PGDATABASEDev,
-  BCRIPT_PASSWORD,
-  SALT_ROUNDS,
-  TOKEN_SECRET,
-} = process.env;
+const { NODE_ENV, BCRIPT_PASSWORD, SALT_ROUNDS, TOKEN_SECRET, PORT } =
+  process.env;
+
+function env(key: string, defaultValue = ""): string {
+  return process.env[key] ?? (defaultValue as string);
+}
 
 export default {
-  port: PORT,
-  user: PGUSER,
-  host: PGHOST,
-  database: NODE_ENV === "DEV" ? PGDATABASEDev : PGDATABASETest,
-  dbPort: PGPORT,
-  password: PGPASSWORD,
+  env,
+  PORT,
+  NODE_ENV,
   pepper: BCRIPT_PASSWORD,
   salt: SALT_ROUNDS,
   tokenSecret: TOKEN_SECRET,

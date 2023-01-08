@@ -3,9 +3,9 @@ import express, { Application, Request, Response } from "express";
 import routes from "./routes";
 import errorMiddleware from "./middleware/error.middleware";
 import config from "./config";
-import db from "./database";
+import db from "./db";
 
-const PORT = config.port || 3000;
+const PORT = config.PORT || 3000;
 // create an instance server
 const app: Application = express();
 // Middleware to parses incoming requests with JSON payloads and is based on body-parser.
