@@ -1,8 +1,10 @@
+import OrderProduct from "./orderProduct";
+
 type Order = {
   id?: string;
-  product_Id: string;
-  quantity: number;
-  state: number;
+  status: "active" | "complete";
   user_Id: string;
+  orderProducts?: OrderProduct[];
 };
+
 export default Order;

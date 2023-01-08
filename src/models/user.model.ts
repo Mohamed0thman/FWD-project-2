@@ -3,7 +3,7 @@ import db from "../db";
 import User from "../types/user.types";
 import bcrypt from "bcrypt";
 import config from "../config";
-import { validation } from "../helper/validation.helpers";
+import { Validation } from "../helper/validation.helpers";
 
 const hashPassword = (password: string): string => {
   const salt = parseInt(config.salt as string, 10);
@@ -15,20 +15,18 @@ class UserModel {
     try {
       const { firstName, lastName, password } = u;
 
-      await new validation({ firstName })
-        .required()
-        .uniqe("users", "firstName");
-      new validation({ lastName }).required();
-      new validation({ password }).required();
+      await new Validation({ firstName }).required().uniqe("users");
+      new Validation({ lastName }).required();
+      new Validation({ password }).required();
 
       const connection = await db.connect();
       const sql = `INSERT INTO users ( firstName, lastName, password) 
       values ($1, $2, $3) 
       RETURNING id, firstName, lastName`;
       const result = await connection.query(sql, [
-        u.firstName,
-        u.lastName,
-        hashPassword(u.password as string),
+        firstName,
+        lastName,
+        hashPassword(password as string),
       ]);
       connection.release();
       return result.rows[0];
