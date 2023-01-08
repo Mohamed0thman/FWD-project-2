@@ -1,45 +1,50 @@
-import express, { Application, Request, Response } from "express";
-
+import express, { Application, NextFunction, Request, Response } from "express";
 import routes from "./routes";
 import errorMiddleware from "./middleware/error.middleware";
 import config from "./config";
-import db from "./db";
+
+const app: Application = express();
 
 const PORT = config.PORT || 3000;
 // create an instance server
-const app: Application = express();
+
 // Middleware to parses incoming requests with JSON payloads and is based on body-parser.
 app.use(express.json());
 
 app.use("/api", routes);
 
-app.get("/", function (_req: Request, res: Response) {
-  res.send("Hello World");
+app.get("/", function (_req: Request, res: Response, Next: NextFunction) {
+  try {
+    res.send("Hello World");
+  } catch (err) {
+    Next(err);
+  }
 });
 
-app.use((_req: Request, res: Response) => {
-  res.status(404).json({
-    message: "ohh you are lost",
-  });
+app.use((_req: Request, res: Response, Next: NextFunction) => {
+  try {
+    throw Error("ohh you are lost");
+  } catch (err) {
+    Next(err);
+  }
 });
-
-db.connect().then((client) => {
-  return client
-    .query("SELECT NOW()")
-    .then((res) => {
-      client.release();
-      console.log(res);
-    })
-    .catch((error: Error) => {
-      client.release();
-      console.log(error.stack);
-    });
-});
-
 app.use(errorMiddleware);
 
-app.listen(PORT, () => {
-  console.log(PORT);
+// db.connect().then((client) => {
+//   return client
+//     .query("SELECT NOW()")
+//     .then((res) => {
+//       client.release();
+//       // console.log(res);
+//     })
+//     .catch((error: Error) => {
+//       client.release();
+//       // console.log(error.stack);
+//     });
+// });
+
+app.listen(PORT, (): void => {
+  console.log(`Application started in http://localhost:${PORT}`);
 });
 
 export default app;

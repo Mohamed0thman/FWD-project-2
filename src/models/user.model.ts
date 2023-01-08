@@ -1,7 +1,9 @@
+/* eslint-disable no-useless-catch */
 import db from "../db";
 import User from "../types/user.types";
 import bcrypt from "bcrypt";
 import config from "../config";
+import { validation } from "../helper/validation.helpers";
 
 const hashPassword = (password: string): string => {
   const salt = parseInt(config.salt as string, 10);
@@ -11,23 +13,27 @@ const hashPassword = (password: string): string => {
 class UserModel {
   async create(u: User): Promise<User> {
     try {
+      const { firstName, lastName, password } = u;
+
+      await new validation({ firstName })
+        .required()
+        .uniqe("users", "firstName");
+      new validation({ lastName }).required();
+      new validation({ password }).required();
+
       const connection = await db.connect();
-      const sql = `INSERT INTO users (email, user_name, first_name, last_name, password) 
-      values ($1, $2, $3, $4, $5) 
-      RETURNING id, email, user_name, first_name, last_name`;
+      const sql = `INSERT INTO users ( firstName, lastName, password) 
+      values ($1, $2, $3) 
+      RETURNING id, firstName, lastName`;
       const result = await connection.query(sql, [
-        u.email,
-        u.user_name,
-        u.first_name,
-        u.last_name,
+        u.firstName,
+        u.lastName,
         hashPassword(u.password as string),
       ]);
       connection.release();
       return result.rows[0];
     } catch (error) {
-      throw new Error(
-        `unable to create(${u.user_name}): ${(error as Error).message}`
-      );
+      throw error;
     }
   }
 
@@ -35,8 +41,7 @@ class UserModel {
   async getMany(): Promise<User[]> {
     try {
       const connection = await db.connect();
-      const sql =
-        "SELECT id, email, user_name, first_name, last_name from users";
+      const sql = "SELECT id, firstName, lastName from users";
       const result = await connection.query(sql);
       connection.release();
       return result.rows;
@@ -47,7 +52,7 @@ class UserModel {
   // get specific user
   async getOne(id: string): Promise<User> {
     try {
-      const sql = `SELECT id, email, user_name, first_name, last_name FROM users 
+      const sql = `SELECT id, firstName, lastName FROM users 
       WHERE id=($1)`;
 
       const connection = await db.connect();
@@ -65,15 +70,13 @@ class UserModel {
     try {
       const connection = await db.connect();
       const sql = `UPDATE users 
-                  SET email=$1, user_name=$2, first_name=$3, last_name=$4, password=$5 
-                  WHERE id=$6 
-                  RETURNING id, email, user_name, first_name, last_name`;
+                  SET firstName=$1, lastName=$2 , password=$3
+                  WHERE id=$4
+                  RETURNING id, firstName, lastName`;
 
       const result = await connection.query(sql, [
-        u.email,
-        u.user_name,
-        u.first_name,
-        u.last_name,
+        u.firstName,
+        u.lastName,
         hashPassword(u.password as string),
         u.id,
       ]);
@@ -81,7 +84,9 @@ class UserModel {
       return result.rows[0];
     } catch (error) {
       throw new Error(
-        `Could not update user: ${u.user_name}, ${(error as Error).message}`
+        `Could not update user: ${u.firstName + u.lastName}, ${
+          (error as Error).message
+        }`
       );
     }
   }
@@ -92,7 +97,7 @@ class UserModel {
       const connection = await db.connect();
       const sql = `DELETE FROM users 
                   WHERE id=($1) 
-                  RETURNING id, email, user_name, first_name, last_name`;
+                  RETURNING id, firstName,lastName`;
 
       const result = await connection.query(sql, [id]);
 
@@ -107,11 +112,17 @@ class UserModel {
   }
 
   // authenticate
-  async authenticate(email: string, password: string): Promise<User | null> {
+  async authenticate(
+    firstName: string,
+    password: string
+  ): Promise<User | null> {
     try {
       const connection = await db.connect();
-      const sql = "SELECT password FROM users WHERE email=$1";
-      const result = await connection.query(sql, [email]);
+      const sql = "SELECT password FROM users WHERE firstName=$1";
+
+      const result = await connection.query(sql, [firstName]);
+      console.log("result", result);
+
       if (result.rows.length) {
         const { password: hashPassword } = result.rows[0];
         const isPasswordValid = bcrypt.compareSync(
@@ -120,8 +131,8 @@ class UserModel {
         );
         if (isPasswordValid) {
           const userInfo = await connection.query(
-            "SELECT id, email, user_name, first_name, last_name FROM users WHERE email=($1)",
-            [email]
+            "SELECT id, firstName,lastName FROM users WHERE firstName=($1)",
+            [firstName]
           );
           return userInfo.rows[0];
         }

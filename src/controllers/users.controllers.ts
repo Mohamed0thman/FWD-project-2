@@ -95,9 +95,11 @@ export const authenticate = async (
   next: NextFunction
 ) => {
   try {
-    const { email, password } = req.body;
+    const { firstName, password } = req.body;
 
-    const user = await userModel.authenticate(email, password);
+    console.log("firstName, password", firstName, password);
+
+    const user = await userModel.authenticate(firstName, password);
     const token = jwt.sign({ user }, config.tokenSecret as unknown as string);
     if (!user) {
       return res.status(401).json({

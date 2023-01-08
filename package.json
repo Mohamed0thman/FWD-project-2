@@ -5,11 +5,12 @@
   "main": "index.js",
   "scripts": {
     "jasmine": "jasmine",
+    "start": "node dist/index.js",
+    "dev": "nodemon src/index.ts",
     "build": "npx tsc",
     "test": "Set ENV=test&& db-migrate --env test reset && db-migrate --env test up && npm run build && npm run jasmine ",
     "lint": "eslint src/*.ts src/**/*.ts",
     "format": "prettier --config .prettierrc src/*.ts src/**/*.ts --write",
-    "start": "nodemon src/index.ts",
     "watch": "tsc-watch --esModuleInterop ./src/server.ts --outDir ./dist",
     "init": "npm install && npm run db:migrate &&npm run start",
     "test-2": "npm run build && npm run jasmine"
