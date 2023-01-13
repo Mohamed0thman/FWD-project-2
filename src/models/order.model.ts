@@ -1,86 +1,85 @@
 /* eslint-disable no-useless-catch */
 import db from "../db";
-import Order from "../types/order.types";
-import { Validation } from "../helper/validation.helpers";
+import { Order, Order_product } from "../types/order.types";
 
 class OrderModel {
+  // create order
   async create(o: Order): Promise<Order> {
     try {
-      const { user_Id } = o;
-
-      new Validation({ user_Id }).required();
-
+      const { user_Id, status, Order_product } = o;
       const connection = await db.connect();
-      const sql = `INSERT INTO orders ( user_Id, product_Id, quantity, state) 
-          values ($1, $2, $3,#4) 
-          RETURNING id, user_Id, product_Id, quantity, state`;
-      const result = await connection.query(sql, [user_Id]);
+      const sql = `INSERT INTO orders ( user_Id,  status)
+          values ($1, $2)
+          RETURNING id, user_Id, status`;
+      const result = await connection.query(sql, [user_Id, status]);
+
+      const addOrderId = Order_product.map((item) => {
+        return {
+          ...item,
+          order_Id: result.rows[0].id,
+        };
+      });
+
+      let counter = 1;
+      const placeHolder: string[] = [];
+      const values: (string | number)[] = [];
+
+      addOrderId.map((item) => {
+        const num: string[] = [];
+        for (const val of Object.values(item)) {
+          num.push(`$${counter}`);
+          values.push(val);
+          counter++;
+        }
+
+        placeHolder.push(`(${num.toString()})`);
+      });
+
+      const productSql = `INSERT INTO order_product (quantity,product_id,order_id ) values ${placeHolder.toString()} RETURNING* `;
+      await connection.query(productSql, [...values]);
+
+      const getOrderSql = `SELECT * FROM orders AS o
+      INNER JOIN order_product AS op ON o.id = op.order_id
+      INNER JOIN products AS p ON p.id = op.product_id
+      WHERE o.id = $1
+      `;
+      const finalResult = await connection.query(getOrderSql, [
+        result.rows[0].id,
+      ]);
+
       connection.release();
-      return result.rows[0];
+      return finalResult.rows[0];
     } catch (error) {
       throw error;
     }
   }
 
-  // get all users
-  async getMany(): Promise<Order[]> {
+  // update order status to complite
+  async updateOne(o: Order): Promise<Order> {
+    const { user_Id, status } = o;
+
     try {
       const connection = await db.connect();
-      const sql =
-        "SELECT id, user_Id, product_Id, quantity, state from products";
-      const result = await connection.query(sql);
-      connection.release();
-      return result.rows;
-    } catch (error) {
-      throw new Error(
-        `Error at retrieving products ${(error as Error).message}`
-      );
-    }
-  }
-  // get specific user
-  async getOne(id: string): Promise<Order> {
-    try {
-      const sql = `SELECT id, firstName, lastName FROM products 
-          WHERE id=($1)`;
+      const sql = `UPDATE orders
+                        SET status=$1,
+                        WHERE user_id=$2
+                        RETURNING *`;
 
-      const connection = await db.connect();
-
-      const result = await connection.query(sql, [id]);
-
+      const result = await connection.query(sql, [status, user_Id]);
       connection.release();
       return result.rows[0];
     } catch (error) {
-      throw new Error(`Could not find user ${id}, ${(error as Error).message}`);
-    }
-  }
-  // update user
-  async updateOne(p: Product): Promise<Product> {
-    try {
-      const { id, name, price, category } = p;
-
-      const connection = await db.connect();
-      const sql = `UPDATE products 
-                      SET name=$1, price=$2 , category=$3
-                      WHERE id=$4
-                      RETURNING id, name, price,category`;
-
-      const result = await connection.query(sql, [name, price, category, id]);
-      connection.release();
-      return result.rows[0];
-    } catch (error) {
-      throw new Error(
-        `Could not update product: ${p.name}, ${(error as Error).message}`
-      );
+      throw new Error(`Could not update order, ${(error as Error).message}`);
     }
   }
 
-  // delete user
-  async deleteOne(id: string): Promise<Product> {
+  // delete order
+  async deleteOne(id: string): Promise<Order> {
     try {
       const connection = await db.connect();
-      const sql = `DELETE FROM products 
-                      WHERE id=($1) 
-                      RETURNING id, name, price, category`;
+      const sql = `DELETE FROM orders
+                        WHERE id=($1)
+                        RETURNING *`;
 
       const result = await connection.query(sql, [id]);
 
@@ -88,9 +87,7 @@ class OrderModel {
 
       return result.rows[0];
     } catch (error) {
-      throw new Error(
-        `Could not delete products ${id}, ${(error as Error).message}`
-      );
+      throw new Error(`Could not delete order, ${(error as Error).message}`);
     }
   }
 }

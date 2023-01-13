@@ -20,6 +20,43 @@ export const create = async (
   }
 };
 
+export const filter = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    console.log("req.params.category", req.query.category);
+    const product = await productModel.filter(req.query.category as string);
+    res.json({
+      status: "success",
+      data: { ...product },
+      message: "product filterd successfully",
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getTop = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  console.log("req.params.limit", req.query.limit);
+
+  try {
+    const product = await productModel.getTop(req.query.limit as string);
+    res.json({
+      status: "success",
+      data: { ...product },
+      message: "get top products successfully",
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const getMany = async (
   _: Request,
   res: Response,

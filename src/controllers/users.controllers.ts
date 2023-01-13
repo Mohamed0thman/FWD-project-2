@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import UserModel from "../models/user.model";
 import config from "../config";
+import Validation from "../helper/validation.helpers";
 
 const userModel = new UserModel();
 
@@ -11,6 +12,16 @@ export const create = async (
   next: NextFunction
 ) => {
   try {
+    const { email, firstName, lastName, password, ConfirmPassword } = req.body;
+
+    Validation.validate({ email }).required().isEmail();
+    Validation.validate({ firstName }).required();
+    Validation.validate({ lastName }).required();
+    Validation.validate({ password })
+      .required()
+      .isPassword()
+      ?.ConfirmPassword(ConfirmPassword);
+
     const user = await userModel.create(req.body);
     res.json({
       status: "success",
@@ -62,7 +73,14 @@ export const updateOne = async (
   next: NextFunction
 ) => {
   try {
-    const user = await userModel.updateOne(req.body);
+    const { email, firstName, lastName, password } = req.body;
+    Validation.validate({ id: req.params.id }).required();
+    Validation.validate({ email }).isNotEmpty()?.isEmail();
+    Validation.validate({ password }).isNotEmpty()?.isPassword();
+    Validation.validate({ firstName }).isNotEmpty();
+    Validation.validate({ lastName }).isNotEmpty();
+
+    const user = await userModel.updateOne({ ...req.body }, req.params.id);
     res.json({
       status: "success",
       data: user,
@@ -95,18 +113,11 @@ export const authenticate = async (
   next: NextFunction
 ) => {
   try {
-    const { firstName, password } = req.body;
+    const { email, password } = req.body;
 
-    console.log("firstName, password", firstName, password);
-
-    const user = await userModel.authenticate(firstName, password);
+    const user = await userModel.authenticate(email, password);
     const token = jwt.sign({ user }, config.tokenSecret as unknown as string);
-    if (!user) {
-      return res.status(401).json({
-        status: "error",
-        message: "the username and password do not match please try again",
-      });
-    }
+
     return res.json({
       status: "success",
       data: { ...user, token },

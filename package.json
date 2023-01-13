@@ -13,7 +13,10 @@
     "format": "prettier --config .prettierrc src/*.ts src/**/*.ts --write",
     "watch": "tsc-watch --esModuleInterop ./src/server.ts --outDir ./dist",
     "init": "npm install && npm run db:migrate &&npm run start",
-    "test-2": "npm run build && npm run jasmine"
+    "test-2": "npm run build && npm run jasmine",
+    "up": "db-migrate up",
+    "create": "db-migrate create --sql-file",
+    "reset": "db-migrate reset"
   },
   "dependencies": {
     "bcrypt": "^5.1.0",

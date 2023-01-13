@@ -1,10 +1,13 @@
-import OrderProduct from "./orderProduct";
-
-type Order = {
+export type Order = {
   id?: string;
   status: "active" | "complete";
   user_Id: string;
-  orderProducts?: OrderProduct[];
+  Order_product: Order_product[];
 };
 
-export default Order;
+export type Order_product = {
+  id?: string;
+  quantity: number;
+  order_Id?: string;
+  product_Id: string;
+};
