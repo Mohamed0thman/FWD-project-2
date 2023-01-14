@@ -5,3 +5,5 @@ CREATE TABLE IF NOT EXISTS users (
     lastName VARCHAR(100) NOT NULL,
     password VARCHAR NOT NULL
 );
+
+INSERT INTO users (email, firstName, lastName, password) values('user@gmail.com', 'mohamed', 'ramadan', '123456asdf')

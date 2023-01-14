@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import UserModel from "../models/user.model";
 import config from "../config";
-import Validation from "../helper/validation.helpers";
+
 
 const userModel = new UserModel();
 
@@ -12,18 +12,8 @@ export const create = async (
   next: NextFunction
 ) => {
   try {
-    const { email, firstName, lastName, password, ConfirmPassword } = req.body;
-
-    Validation.validate({ email }).required().isEmail();
-    Validation.validate({ firstName }).required();
-    Validation.validate({ lastName }).required();
-    Validation.validate({ password })
-      .required()
-      .isPassword()
-      ?.ConfirmPassword(ConfirmPassword);
-
     const user = await userModel.create(req.body);
-    res.json({
+    res.status(201).json({
       status: "success",
       data: { ...user },
       message: "User created successfully",
@@ -40,7 +30,7 @@ export const getMany = async (
 ) => {
   try {
     const users = await userModel.getMany();
-    res.json({
+    res.status(200).json({
       status: "success",
       data: users,
       message: "User retrieved successfully",
@@ -57,7 +47,7 @@ export const getOne = async (
 ) => {
   try {
     const user = await userModel.getOne(req.params.id as unknown as string);
-    res.json({
+    res.status(200).json({
       status: "success",
       data: user,
       message: "User retrieved successfully",
@@ -73,15 +63,8 @@ export const updateOne = async (
   next: NextFunction
 ) => {
   try {
-    const { email, firstName, lastName, password } = req.body;
-    Validation.validate({ id: req.params.id }).required();
-    Validation.validate({ email }).isNotEmpty()?.isEmail();
-    Validation.validate({ password }).isNotEmpty()?.isPassword();
-    Validation.validate({ firstName }).isNotEmpty();
-    Validation.validate({ lastName }).isNotEmpty();
-
     const user = await userModel.updateOne({ ...req.body }, req.params.id);
-    res.json({
+    res.status(200).json({
       status: "success",
       data: user,
       message: "User updated successfully",
@@ -98,7 +81,7 @@ export const deleteOne = async (
 ) => {
   try {
     const user = await userModel.deleteOne(req.params.id as unknown as string);
-    res.json({
+    res.status(200).json({
       status: "success",
       data: user,
       message: "User deleted successfully",
@@ -118,7 +101,7 @@ export const authenticate = async (
     const user = await userModel.authenticate(email, password);
     const token = jwt.sign({ user }, config.tokenSecret as unknown as string);
 
-    return res.json({
+    return res.status(200).json({
       status: "success",
       data: { ...user, token },
       message: "user authenticated successfully",

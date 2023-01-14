@@ -16,6 +16,8 @@ const validateTokenMiddleware = (
 ) => {
   try {
     const authHeader = req.get("Authorization");
+    console.log("authHeader", authHeader);
+
     if (authHeader) {
       const bearer = authHeader.split(" ")[0].toLowerCase();
       const token = authHeader.split(" ")[1];

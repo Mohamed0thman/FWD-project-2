@@ -1,8 +1,8 @@
-/* eslint-disable no-useless-catch */
 import db from "../db";
 import User from "../types/user.types";
 import bcrypt from "bcrypt";
 import config from "../config";
+import Validation from "../helper/validation.helpers";
 
 const hashPassword = (password: string): string => {
   const salt = parseInt(config.salt as string, 10);
@@ -12,14 +12,20 @@ const hashPassword = (password: string): string => {
 class UserModel {
   async create(u: User): Promise<User> {
     try {
-      const { email, firstName, lastName, password } = u;
+      const { email, firstName, lastName, password, ConfirmPassword } = u;
+
+      Validation.validate({ email }).required().isEmail();
+      Validation.validate({ firstName }).required();
+      Validation.validate({ lastName }).required();
+      Validation.validate({ password })
+        .required()
+        .isPassword()
+        ?.ConfirmPassword(ConfirmPassword);
 
       const connection = await db.connect();
       const existEmailSql = `select  exists (select  count(*) from users 
       where email = $1 having count(*) > 0) as exist`;
       const existEmail = await connection.query(existEmailSql, [email]);
-
-      console.log(existEmail.rows[0].exist);
 
       if (existEmail.rows[0].exist) {
         throw Error("email is exist");
@@ -36,7 +42,13 @@ class UserModel {
       connection.release();
       return result.rows[0];
     } catch (error) {
-      throw error;
+      throw {
+        status: 401,
+        message: `Could not create user ${u.email}, ${
+          (error as Error).message
+        }`,
+        error: new Error(),
+      };
     }
   }
 
@@ -49,7 +61,11 @@ class UserModel {
       connection.release();
       return result.rows;
     } catch (error) {
-      throw new Error(`Error at retrieving users ${(error as Error).message}`);
+      throw {
+        status: 401,
+        message: `Error at retrieving user, ${(error as Error).message}`,
+        error: new Error(),
+      };
     }
   }
   // get specific user
@@ -65,29 +81,62 @@ class UserModel {
       connection.release();
       return result.rows[0];
     } catch (error) {
-      throw new Error(`Could not find user ${id}, ${(error as Error).message}`);
+      throw {
+        status: 401,
+        message: `Could not find use, ${(error as Error).message}`,
+        error: new Error(),
+      };
     }
   }
   // update user
   async updateOne(u: User, id: string): Promise<User> {
     try {
+      const { email, firstName, lastName, password } = u;
+
+      Validation.validate({ id }).required();
+      Validation.validate({ email }).isNotEmpty()?.isEmail();
+      Validation.validate({ password }).isNotEmpty()?.isPassword();
+      Validation.validate({ firstName }).isNotEmpty();
+      Validation.validate({ lastName }).isNotEmpty();
+      const connection = await db.connect();
+
+      const existEmailSql = `select  exists (select  count(*) from users 
+      where email = $1 having count(*) > 0) as exist`;
+      const existEmail = await connection.query(existEmailSql, [u.email]);
+
+      if (existEmail.rows[0].exist) {
+        throw Error("email is exist");
+      }
+
       const values: string[] = [];
       const placeHolders: string[] = [];
       Object.entries(u).map(([key, value], i) => {
         placeHolders.push(`${key}=$${i + 1}`);
-        values.push(value);
+        if (key === "password") {
+          values.push(hashPassword(value));
+        } else {
+          values.push(value);
+        }
       });
 
-      const connection = await db.connect();
       const sql = `UPDATE users
       SET ${placeHolders.toString()}
       WHERE id=$${placeHolders.length + 1}
-      RETURNING *`;
+      RETURNING id, email, firstName, lastName`;
       const result = await connection.query(sql, [...values, id]);
+
       connection.release();
+
+      if (!result.rows.length) {
+        throw Error("user not exist");
+      }
       return result.rows[0];
     } catch (error) {
-      throw new Error(`Could not update user, ${(error as Error).message}`);
+      throw {
+        status: 401,
+        message: `Could not update user, ${(error as Error).message}`,
+        error: new Error(),
+      };
     }
   }
 
@@ -95,19 +144,26 @@ class UserModel {
   async deleteOne(id: string): Promise<User> {
     try {
       const connection = await db.connect();
+
       const sql = `DELETE FROM users 
                   WHERE id=($1) 
                   RETURNING id, email, firstName,lastName`;
 
       const result = await connection.query(sql, [id]);
 
+      if (!result.rows.length) {
+        throw Error("user not exist");
+      }
+
       connection.release();
 
       return result.rows[0];
     } catch (error) {
-      throw new Error(
-        `Could not delete user ${id}, ${(error as Error).message}`
-      );
+      throw {
+        status: 401,
+        message: `Could not delete user, ${(error as Error).message}`,
+        error: new Error(),
+      };
     }
   }
 
@@ -126,17 +182,23 @@ class UserModel {
         `${password}${config.pepper}`,
         hashPassword
       );
+      console.log(isPasswordValid);
+
       if (!isPasswordValid) {
         throw Error("password not valid");
       }
       const userInfo = await connection.query(
-        "SELECT id, email , firstName,lastName FROM users WHERE email=($1)",
+        "SELECT id, email ,firstName,lastName FROM users WHERE email=($1)",
         [email]
       );
       connection.release();
       return userInfo.rows[0];
     } catch (error) {
-      throw new Error(`Unable to login: ${(error as Error).message}`);
+      throw {
+        status: 401,
+        message: `Unable to login, ${(error as Error).message}`,
+        error: new Error(),
+      };
     }
   }
 }

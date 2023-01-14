@@ -52,6 +52,11 @@ class Validate {
     }
     return this;
   }
+  isInt(): this | undefined {
+    if (this.value === undefined) return;
+    if (/^\d+$/.test(this.value as string)) return this;
+    throw Error(`${this.key} should be integer`);
+  }
 }
 
 class Validation {

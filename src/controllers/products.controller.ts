@@ -99,7 +99,10 @@ export const updateOne = async (
   next: NextFunction
 ) => {
   try {
-    const product = await productModel.updateOne(req.body);
+    const product = await productModel.updateOne(
+      req.body,
+      req.params.id as string
+    );
     res.json({
       status: "success",
       data: product,

@@ -1,35 +1,69 @@
-/* eslint-disable no-useless-catch */
 import db from "../db";
+import Validation from "../helper/validation.helpers";
 import Product from "../types/product.types";
 class ProductModel {
   async create(p: Product): Promise<Product> {
     try {
       const { name, price, category } = p;
+      Validation.validate({ name }).required().isNotEmpty();
+      Validation.validate({ price }).required().isInt();
+      Validation.validate({ category }).isNotEmpty();
+
+      const keys: string[] = [];
+      const values: (string | number)[] = [];
+      const placeHolders: string[] = [];
+
+      Object.entries(p).map(([key, value], i) => {
+        keys.push(key);
+        values.push(value);
+        placeHolders.push(`$${i + 1}`);
+      });
 
       const connection = await db.connect();
-      const sql = `INSERT INTO products ( name, price, category) 
-        values ($1, $2, $3) 
+      const existsql = `select  exists (select  count(*) from products 
+      where name = $1 having count(*) > 0) as exist`;
+      const existProduct = await connection.query(existsql, [name]);
+
+      if (existProduct.rows[0].exist) {
+        throw Error("product name is exist");
+      }
+
+      const sql = `INSERT INTO products ( ${keys.toString()}) 
+        values (${placeHolders.toString()}) 
         RETURNING id, name, price,category`;
-      const result = await connection.query(sql, [name, price, category]);
+
+      const result = await connection.query(sql, values);
       connection.release();
       return result.rows[0];
     } catch (error) {
-      throw error;
+      throw {
+        status: 422,
+        message: `Could not create product ${p.name}, ${
+          (error as Error).message
+        }`,
+        error: new Error(),
+      };
     }
   }
 
   ///filter by category
   async filter(category: string): Promise<Product[]> {
     try {
+      Validation.validate({ category }).required().isNotEmpty();
+
       const connection = await db.connect();
       const sql = "SELECT * from products WHERE category = $1 ";
       const result = await connection.query(sql, [category]);
       connection.release();
       return result.rows;
     } catch (error) {
-      throw new Error(
-        `Error at retrieving products ${(error as Error).message}`
-      );
+      throw {
+        status: 422,
+        message: `Could not filter products by category ${category}, ${
+          (error as Error).message
+        }`,
+        error: new Error(),
+      };
     }
   }
 
@@ -37,8 +71,7 @@ class ProductModel {
   async getTop(limit: string): Promise<Product[]> {
     try {
       const connection = await db.connect();
-      console.log(limit);
-
+      Validation.validate({ limit }).required().isInt();
       const sql = `
       SELECT sum( op.quantity) as total_quantity, p.name, p.id  FROM order_product AS op
       INNER JOIN products AS p ON p.id = op.product_id
@@ -50,9 +83,13 @@ class ProductModel {
       connection.release();
       return result.rows;
     } catch (error) {
-      throw new Error(
-        `Error at retrieving products ${(error as Error).message}`
-      );
+      throw {
+        status: 422,
+        message: `Could not get top ${limit} products,  ${
+          (error as Error).message
+        }`,
+        error: new Error(),
+      };
     }
   }
   // get all users
@@ -64,9 +101,11 @@ class ProductModel {
       connection.release();
       return result.rows;
     } catch (error) {
-      throw new Error(
-        `Error at retrieving products ${(error as Error).message}`
-      );
+      throw {
+        status: 422,
+        message: `Could not get all products,  ${(error as Error).message}`,
+        error: new Error(),
+      };
     }
   }
   // get specific user
@@ -82,29 +121,59 @@ class ProductModel {
       connection.release();
       return result.rows[0];
     } catch (error) {
-      throw new Error(`Could not find user ${id}, ${(error as Error).message}`);
+      throw {
+        status: 422,
+        message: `Could not find product,  ${(error as Error).message}`,
+        error: new Error(),
+      };
     }
   }
   // update user
-  async updateOne(p: Product): Promise<Product> {
+  async updateOne(p: Product, id: string): Promise<Product> {
     try {
-      const { id, name, price, category } = p;
+      const { name, price, category } = p;
+
+      Validation.validate({ name }).isNotEmpty();
+      Validation.validate({ price }).isInt();
+      Validation.validate({ category }).isNotEmpty();
 
       const connection = await db.connect();
-      const sql = `UPDATE products 
-                    SET name=$1, price=$2 , category=$3
-                    WHERE id=$4
-                    RETURNING id, name, price,category`;
 
-      const result = await connection.query(sql, [name, price, category, id]);
+      if (name) {
+        const existNameSql = `select  exists (select  count(*) from products 
+      where name = $1 having count(*) > 0) as exist`;
+        const existProductName = await connection.query(existNameSql, [name]);
+
+        if (existProductName.rows[0].exist) {
+          throw Error("product name is exist");
+        }
+      }
+      const values: (string | number)[] = [];
+      const placeHolders: string[] = [];
+      Object.entries(p).map(([key, value], i) => {
+        placeHolders.push(`${key}=$${i + 1}`);
+        values.push(value);
+      });
+
+      const sql = `UPDATE products
+      SET ${placeHolders.toString()}
+      WHERE id=$${placeHolders.length + 1}
+      RETURNING id, name, price, category`;
+      const result = await connection.query(sql, [...values, id]);
       console.log(result.rows);
 
       connection.release();
+
+      if (!result.rows.length) {
+        throw Error("product not exist");
+      }
       return result.rows[0];
     } catch (error) {
-      throw new Error(
-        `Could not update product: ${p.name}, ${(error as Error).message}`
-      );
+      throw {
+        status: 422,
+        message: `Could not update product,  ${(error as Error).message}`,
+        error: new Error(),
+      };
     }
   }
 
@@ -120,11 +189,17 @@ class ProductModel {
 
       connection.release();
 
+      if (!result.rows.length) {
+        throw Error("product not exist");
+      }
+
       return result.rows[0];
     } catch (error) {
-      throw new Error(
-        `Could not delete products ${id}, ${(error as Error).message}`
-      );
+      throw {
+        status: 422,
+        message: `Could not delete products,  ${(error as Error).message}`,
+        error: new Error(),
+      };
     }
   }
 }
