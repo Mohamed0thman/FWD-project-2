@@ -7,9 +7,9 @@ CREATE TABLE IF NOT EXISTS products (
 
 
 
-INSERT INTO products (name, price, category) values ('bed', 200, 'bedroom'),
-('bed', 200, 'bedroom'),('cupboard', 1200, 'bedroom'),('couch', 290, 'livingroom'),
-('table', 250, 'livingroom'),
+INSERT INTO products (name, price, category) values ('bed', 200, 'bed room'),
+('bed', 200, 'bed room'),('cupboard', 1200, 'bed room'),('couch', 290, 'living room'),
+('table', 250, 'living room'),
 ('deep freezer', 300, 'kitchen'),
 ('television', 2000 ,dEFAULT),
 ('fridge', 200, 'kitchen'),

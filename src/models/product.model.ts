@@ -1,26 +1,17 @@
 import db from "../db";
+import Query from "../helper/querybuilder";
 import Validation from "../helper/validation.helpers";
 import Product from "../types/product.types";
 class ProductModel {
-  async create(p: Product): Promise<Product> {
+  async create(p: Product): Promise<Product[]> {
     try {
       const { name, price, category } = p;
       Validation.validate({ name }).required().isNotEmpty();
       Validation.validate({ price }).required().isInt();
       Validation.validate({ category }).isNotEmpty();
 
-      const keys: string[] = [];
-      const values: (string | number)[] = [];
-      const placeHolders: string[] = [];
-
-      Object.entries(p).map(([key, value], i) => {
-        keys.push(key);
-        values.push(value);
-        placeHolders.push(`$${i + 1}`);
-      });
-
       const connection = await db.connect();
-      const existsql = `select  exists (select  count(*) from products 
+      const existsql = `select  exists (select  count(*) from products
       where name = $1 having count(*) > 0) as exist`;
       const existProduct = await connection.query(existsql, [name]);
 
@@ -28,13 +19,15 @@ class ProductModel {
         throw Error("product name is exist");
       }
 
-      const sql = `INSERT INTO products ( ${keys.toString()}) 
-        values (${placeHolders.toString()}) 
-        RETURNING id, name, price,category`;
+      const query = new Query();
+
+      const { sql, values } = query.insert("products", [p]);
 
       const result = await connection.query(sql, values);
+
       connection.release();
-      return result.rows[0];
+
+      return result.rows[0] as Product[];
     } catch (error) {
       throw {
         status: 422,
@@ -70,8 +63,10 @@ class ProductModel {
   //get top product
   async getTop(limit: string): Promise<Product[]> {
     try {
-      const connection = await db.connect();
       Validation.validate({ limit }).required().isInt();
+
+      const connection = await db.connect();
+
       const sql = `
       SELECT sum( op.quantity) as total_quantity, p.name, p.id  FROM order_product AS op
       INNER JOIN products AS p ON p.id = op.product_id
@@ -119,6 +114,10 @@ class ProductModel {
       const result = await connection.query(sql, [id]);
 
       connection.release();
+
+      if (!result.rows.length) {
+        throw Error("product not exist");
+      }
       return result.rows[0];
     } catch (error) {
       throw {
@@ -129,7 +128,7 @@ class ProductModel {
     }
   }
   // update user
-  async updateOne(p: Product, id: string): Promise<Product> {
+  async updateOne(p: Product, id: string): Promise<Product[]> {
     try {
       const { name, price, category } = p;
 
@@ -140,7 +139,7 @@ class ProductModel {
       const connection = await db.connect();
 
       if (name) {
-        const existNameSql = `select  exists (select  count(*) from products 
+        const existNameSql = `select  exists (select  count(*) from products
       where name = $1 having count(*) > 0) as exist`;
         const existProductName = await connection.query(existNameSql, [name]);
 
@@ -148,26 +147,19 @@ class ProductModel {
           throw Error("product name is exist");
         }
       }
-      const values: (string | number)[] = [];
-      const placeHolders: string[] = [];
-      Object.entries(p).map(([key, value], i) => {
-        placeHolders.push(`${key}=$${i + 1}`);
-        values.push(value);
-      });
 
-      const sql = `UPDATE products
-      SET ${placeHolders.toString()}
-      WHERE id=$${placeHolders.length + 1}
-      RETURNING id, name, price, category`;
+      const query = new Query();
+
+      const { sql, values } = query.update("products", p);
+
       const result = await connection.query(sql, [...values, id]);
-      console.log(result.rows);
 
       connection.release();
 
       if (!result.rows.length) {
         throw Error("product not exist");
       }
-      return result.rows[0];
+      return result.rows[0] as Product[];
     } catch (error) {
       throw {
         status: 422,

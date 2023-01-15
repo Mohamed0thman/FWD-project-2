@@ -6,6 +6,8 @@ import Validation from "../helper/validation.helpers";
 
 const hashPassword = (password: string): string => {
   const salt = parseInt(config.salt as string, 10);
+  console.log(`${password}${config.pepper}`);
+
   return bcrypt.hashSync(`${password}${config.pepper}`, salt);
 };
 

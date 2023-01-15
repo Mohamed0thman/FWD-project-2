@@ -35,7 +35,8 @@ class OrderModel {
         placeHolder.push(`(${num.toString()})`);
       });
 
-      const productSql = `INSERT INTO order_product (quantity,product_id,order_id ) values ${placeHolder.toString()} RETURNING* `;
+      const productSql = `INSERT INTO order_product (quantity,product_id,order_id )
+       values ${placeHolder.toString()} RETURNING* `;
       await connection.query(productSql, [...values]);
 
       const getOrderSql = `SELECT * FROM orders AS o
