@@ -2,7 +2,6 @@ import db from "../db";
 import User from "../types/user.types";
 import bcrypt from "bcrypt";
 import config from "../config";
-import Validation from "../helper/validation.helpers";
 import query from "../helper/querybuilder";
 
 const hashPassword = (password: string): string => {
@@ -91,14 +90,6 @@ class UserModel {
     const connection = await db.connect();
 
     try {
-      const { email, firstName, lastName, password } = u;
-
-      Validation.validate({ id }).required();
-      Validation.validate({ email }).isNotEmpty()?.isEmail();
-      Validation.validate({ password }).isNotEmpty()?.isPassword();
-      Validation.validate({ firstName }).isNotEmpty();
-      Validation.validate({ lastName }).isNotEmpty();
-
       const existEmailSql = `select  exists (select  count(*) from users 
       where email = $1 having count(*) > 0) as exist`;
       const existEmail = await connection.query(existEmailSql, [u.email]);

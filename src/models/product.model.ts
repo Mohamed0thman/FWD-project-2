@@ -7,10 +7,7 @@ class ProductModel {
     const connection = await db.connect();
 
     try {
-      const { name, price, category } = p;
-      Validation.validate({ name }).required().isNotEmpty();
-      Validation.validate({ price }).required().isInt();
-      Validation.validate({ category }).isNotEmpty();
+      const { name } = p;
 
       const existsql = `select  exists (select  count(*) from products
       where name = $1 having count(*) > 0) as exist`;
@@ -43,8 +40,6 @@ class ProductModel {
     const connection = await db.connect();
 
     try {
-      Validation.validate({ category }).required().isNotEmpty();
-
       const sql = "SELECT * from products WHERE category = $1 ";
       const result = await connection.query(sql, [category]);
       return result.rows;
@@ -66,8 +61,6 @@ class ProductModel {
     const connection = await db.connect();
 
     try {
-      Validation.validate({ limit }).required().isInt();
-
       const sql = `
       SELECT sum( op.quantity) as total_quantity, p.name, p.id  FROM order_product AS op
       INNER JOIN products AS p ON p.id = op.product_id
@@ -136,11 +129,7 @@ class ProductModel {
     const connection = await db.connect();
 
     try {
-      const { name, price, category } = p;
-
-      Validation.validate({ name }).isNotEmpty();
-      Validation.validate({ price }).isInt();
-      Validation.validate({ category }).isNotEmpty();
+      const { name } = p;
 
       if (name) {
         const existNameSql = `select  exists (select  count(*) from products

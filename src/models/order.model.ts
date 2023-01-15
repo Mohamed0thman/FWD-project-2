@@ -73,11 +73,15 @@ class OrderModel {
       const { user_Id } = o;
 
       const sql = `UPDATE orders
-                        SET status=$1,
-                        WHERE user_id=$2
+                        SET status=$1
+                        WHERE user_id = $2 and  status = $3
                         RETURNING *`;
 
-      const result = await connection.query(sql, ["complete", user_Id]);
+      const result = await connection.query(sql, ["complete", user_Id, 'active']);
+
+      if (!result.rows.length) {
+        throw Error("order not exist");
+      }
       return result.rows[0];
     } catch (error) {
       throw {
@@ -100,7 +104,9 @@ class OrderModel {
                         RETURNING *`;
 
       const result = await connection.query(sql, [id]);
-
+      if (!result.rows.length) {
+        throw Error("order not exist");
+      }
       return result.rows[0];
     } catch (error) {
       throw {

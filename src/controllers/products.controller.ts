@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import Validation from "../helper/validation.helpers";
 import ProductModel from "../models/product.model";
 
 const productModel = new ProductModel();
@@ -9,6 +10,10 @@ export const create = async (
   next: NextFunction
 ) => {
   try {
+    const { name, price, category } = req.body;
+    Validation.validate({ name }).required().isNotEmpty();
+    Validation.validate({ price }).required().isInt();
+    Validation.validate({ category }).isNotEmpty();
     const product = await productModel.create(req.body);
     res.json({
       status: "success",
@@ -26,7 +31,10 @@ export const filter = async (
   next: NextFunction
 ) => {
   try {
-    console.log("req.params.category", req.query.category);
+    Validation.validate({ category: req.query.category as string })
+      .required()
+      .isNotEmpty();
+
     const product = await productModel.filter(req.query.category as string);
     res.json({
       status: "success",
@@ -43,9 +51,13 @@ export const getTop = async (
   res: Response,
   next: NextFunction
 ) => {
-  console.log("req.params.limit", req.query.limit);
+  console.log("req.params.limit");
 
   try {
+    Validation.validate({ limit: req.query.limit as string })
+      .required()
+      .isInt();
+
     const product = await productModel.getTop(req.query.limit as string);
     res.json({
       status: "success",
@@ -99,6 +111,12 @@ export const updateOne = async (
   next: NextFunction
 ) => {
   try {
+    const { name, price, category } = req.body;
+
+    Validation.validate({ name }).isNotEmpty();
+    Validation.validate({ price }).isInt();
+    Validation.validate({ category }).isNotEmpty();
+
     const product = await productModel.updateOne(
       req.body,
       req.params.id as string

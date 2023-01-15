@@ -18,6 +18,7 @@ export const create = async (
     Validation.validate({ firstName }).required();
     Validation.validate({ lastName }).required();
     Validation.validate({ password })
+
       .required()
       .isPassword()
       ?.ConfirmPassword(ConfirmPassword);
@@ -72,6 +73,13 @@ export const updateOne = async (
   next: NextFunction
 ) => {
   try {
+    const { email, firstName, lastName, password } = req.body;
+
+    Validation.validate({ email }).isNotEmpty()?.isEmail();
+    Validation.validate({ password }).isNotEmpty()?.isPassword();
+    Validation.validate({ firstName }).isNotEmpty();
+    Validation.validate({ lastName }).isNotEmpty();
+
     const user = await userModel.updateOne({ ...req.body }, req.params.id);
     res.status(200).json({
       status: "success",

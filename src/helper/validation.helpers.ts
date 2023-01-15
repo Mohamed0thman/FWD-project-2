@@ -54,14 +54,15 @@ class Validate {
   }
   isInt(): this | undefined {
     if (this.value === undefined) return;
+
     if (/^\d+$/.test(this.value as string)) return this;
     throw Error(`${this.key} should be integer`);
   }
 }
 
 class Validation {
-  static validate(table: { [x: string]: string | number }): Validate {
-    return new Validate(table);
+  static validate(quary: { [x: string]: string | number }): Validate {
+    return new Validate(quary);
   }
 }
 
