@@ -3,6 +3,7 @@ import User from "../types/user.types";
 import bcrypt from "bcrypt";
 import config from "../config";
 import Validation from "../helper/validation.helpers";
+import query from "../helper/querybuilder";
 
 const hashPassword = (password: string): string => {
   const salt = parseInt(config.salt as string, 10);
@@ -13,18 +14,11 @@ const hashPassword = (password: string): string => {
 
 class UserModel {
   async create(u: User): Promise<User> {
+    const connection = await db.connect();
+
     try {
-      const { email, firstName, lastName, password, ConfirmPassword } = u;
+      const { email, firstName, lastName, password } = u;
 
-      Validation.validate({ email }).required().isEmail();
-      Validation.validate({ firstName }).required();
-      Validation.validate({ lastName }).required();
-      Validation.validate({ password })
-        .required()
-        .isPassword()
-        ?.ConfirmPassword(ConfirmPassword);
-
-      const connection = await db.connect();
       const existEmailSql = `select  exists (select  count(*) from users 
       where email = $1 having count(*) > 0) as exist`;
       const existEmail = await connection.query(existEmailSql, [email]);
@@ -41,7 +35,6 @@ class UserModel {
         lastName,
         hashPassword(password as string),
       ]);
-      connection.release();
       return result.rows[0];
     } catch (error) {
       throw {
@@ -51,6 +44,8 @@ class UserModel {
         }`,
         error: new Error(),
       };
+    } finally {
+      connection.release();
     }
   }
 
@@ -72,15 +67,14 @@ class UserModel {
   }
   // get specific user
   async getOne(id: string): Promise<User> {
+    const connection = await db.connect();
+
     try {
       const sql = `SELECT id, email, firstName, lastName FROM users 
       WHERE id=($1)`;
 
-      const connection = await db.connect();
-
       const result = await connection.query(sql, [id]);
 
-      connection.release();
       return result.rows[0];
     } catch (error) {
       throw {
@@ -88,10 +82,14 @@ class UserModel {
         message: `Could not find use, ${(error as Error).message}`,
         error: new Error(),
       };
+    } finally {
+      connection.release();
     }
   }
   // update user
   async updateOne(u: User, id: string): Promise<User> {
+    const connection = await db.connect();
+
     try {
       const { email, firstName, lastName, password } = u;
 
@@ -100,7 +98,6 @@ class UserModel {
       Validation.validate({ password }).isNotEmpty()?.isPassword();
       Validation.validate({ firstName }).isNotEmpty();
       Validation.validate({ lastName }).isNotEmpty();
-      const connection = await db.connect();
 
       const existEmailSql = `select  exists (select  count(*) from users 
       where email = $1 having count(*) > 0) as exist`;
@@ -109,25 +106,9 @@ class UserModel {
       if (existEmail.rows[0].exist) {
         throw Error("email is exist");
       }
+      const { sql, values } = query.update("users", u);
 
-      const values: string[] = [];
-      const placeHolders: string[] = [];
-      Object.entries(u).map(([key, value], i) => {
-        placeHolders.push(`${key}=$${i + 1}`);
-        if (key === "password") {
-          values.push(hashPassword(value));
-        } else {
-          values.push(value);
-        }
-      });
-
-      const sql = `UPDATE users
-      SET ${placeHolders.toString()}
-      WHERE id=$${placeHolders.length + 1}
-      RETURNING id, email, firstName, lastName`;
       const result = await connection.query(sql, [...values, id]);
-
-      connection.release();
 
       if (!result.rows.length) {
         throw Error("user not exist");
@@ -139,14 +120,16 @@ class UserModel {
         message: `Could not update user, ${(error as Error).message}`,
         error: new Error(),
       };
+    } finally {
+      connection.release();
     }
   }
 
   // delete user
   async deleteOne(id: string): Promise<User> {
-    try {
-      const connection = await db.connect();
+    const connection = await db.connect();
 
+    try {
       const sql = `DELETE FROM users 
                   WHERE id=($1) 
                   RETURNING id, email, firstName,lastName`;
@@ -157,8 +140,6 @@ class UserModel {
         throw Error("user not exist");
       }
 
-      connection.release();
-
       return result.rows[0];
     } catch (error) {
       throw {
@@ -166,13 +147,16 @@ class UserModel {
         message: `Could not delete user, ${(error as Error).message}`,
         error: new Error(),
       };
+    } finally {
+      connection.release();
     }
   }
 
   // authenticate
   async authenticate(email: string, password: string): Promise<User | null> {
+    const connection = await db.connect();
+
     try {
-      const connection = await db.connect();
       const sql = "SELECT password FROM users WHERE email=$1";
 
       const result = await connection.query(sql, [email]);
@@ -193,7 +177,6 @@ class UserModel {
         "SELECT id, email ,firstName,lastName FROM users WHERE email=($1)",
         [email]
       );
-      connection.release();
       return userInfo.rows[0];
     } catch (error) {
       throw {
@@ -201,6 +184,8 @@ class UserModel {
         message: `Unable to login, ${(error as Error).message}`,
         error: new Error(),
       };
+    } finally {
+      connection.release();
     }
   }
 }

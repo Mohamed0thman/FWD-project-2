@@ -1,94 +1,115 @@
-/* eslint-disable no-useless-catch */
 import db from "../db";
-import { Order, Order_product } from "../types/order.types";
+import query from "../helper/querybuilder";
+import { Order } from "../types/order.types";
 
 class OrderModel {
   // create order
-  async create(o: Order): Promise<Order> {
+  async create(o: Order): Promise<Order[]> {
+    const connection = await db.connect();
+
     try {
-      const { user_Id, status, Order_product } = o;
-      const connection = await db.connect();
-      const sql = `INSERT INTO orders ( user_Id,  status)
-          values ($1, $2)
-          RETURNING id, user_Id, status`;
-      const result = await connection.query(sql, [user_Id, status]);
+      await connection.query("BEGIN");
+
+      const { user_Id, Order_product } = o;
+
+      let order_id: string;
+
+      const activeSql = `select  id from orders where user_id = $1 and status= 'active'`;
+
+      const activeOrder = await connection.query(activeSql, [user_Id]);
+
+      if (activeOrder.rows.length) {
+        console.log("exeest");
+
+        order_id = activeOrder.rows[0].id;
+      } else {
+        console.log("not");
+
+        const orderSql = `INSERT INTO orders ( user_Id) values ($1) RETURNING id`;
+        const result = await connection.query(orderSql, [user_Id]);
+
+        order_id = result.rows[0].id;
+      }
 
       const addOrderId = Order_product.map((item) => {
         return {
           ...item,
-          order_Id: result.rows[0].id,
+          order_Id: order_id,
         };
       });
 
-      let counter = 1;
-      const placeHolder: string[] = [];
-      const values: (string | number)[] = [];
+      const { sql, values } = query.insert("order_product", addOrderId);
 
-      addOrderId.map((item) => {
-        const num: string[] = [];
-        for (const val of Object.values(item)) {
-          num.push(`$${counter}`);
-          values.push(val);
-          counter++;
-        }
-
-        placeHolder.push(`(${num.toString()})`);
-      });
-
-      const productSql = `INSERT INTO order_product (quantity,product_id,order_id )
-       values ${placeHolder.toString()} RETURNING* `;
-      await connection.query(productSql, [...values]);
+      await connection.query(sql, [...values]);
 
       const getOrderSql = `SELECT * FROM orders AS o
       INNER JOIN order_product AS op ON o.id = op.order_id
       INNER JOIN products AS p ON p.id = op.product_id
       WHERE o.id = $1
       `;
-      const finalResult = await connection.query(getOrderSql, [
-        result.rows[0].id,
-      ]);
+      const finalResult = await connection.query(getOrderSql, [order_id]);
 
-      connection.release();
-      return finalResult.rows[0];
+      await connection.query("COMMIT");
+
+      return finalResult.rows;
     } catch (error) {
-      throw error;
+      await connection.query("ROLLBACK");
+
+      throw {
+        status: 422,
+        message: `Could not create order  ${(error as Error).message}`,
+        error: new Error(),
+      };
+    } finally {
+      connection.release();
     }
   }
 
   // update order status to complite
   async updateOne(o: Order): Promise<Order> {
-    const { user_Id, status } = o;
+    const connection = await db.connect();
 
     try {
-      const connection = await db.connect();
+      const { user_Id } = o;
+
       const sql = `UPDATE orders
                         SET status=$1,
                         WHERE user_id=$2
                         RETURNING *`;
 
-      const result = await connection.query(sql, [status, user_Id]);
-      connection.release();
+      const result = await connection.query(sql, ["complete", user_Id]);
       return result.rows[0];
     } catch (error) {
-      throw new Error(`Could not update order, ${(error as Error).message}`);
+      throw {
+        status: 422,
+        message: `Could not update order, ${(error as Error).message}`,
+        error: new Error(),
+      };
+    } finally {
+      connection.release();
     }
   }
 
   // delete order
   async deleteOne(id: string): Promise<Order> {
+    const connection = await db.connect();
+
     try {
-      const connection = await db.connect();
       const sql = `DELETE FROM orders
                         WHERE id=($1)
                         RETURNING *`;
 
       const result = await connection.query(sql, [id]);
 
-      connection.release();
-
       return result.rows[0];
     } catch (error) {
-      throw new Error(`Could not delete order, ${(error as Error).message}`);
+      throw {
+        status: 422,
+        message: `Could not delete order, ${(error as Error).message}`,
+        error: new Error(),
+      };
+    } finally {
+      connection.release();
     }
   }
 }

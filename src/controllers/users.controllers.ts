@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import UserModel from "../models/user.model";
 import config from "../config";
-
+import Validation from "../helper/validation.helpers";
 
 const userModel = new UserModel();
 
@@ -12,6 +12,15 @@ export const create = async (
   next: NextFunction
 ) => {
   try {
+    const { email, firstName, lastName, password, ConfirmPassword } = req.body;
+
+    Validation.validate({ email }).required().isEmail();
+    Validation.validate({ firstName }).required();
+    Validation.validate({ lastName }).required();
+    Validation.validate({ password })
+      .required()
+      .isPassword()
+      ?.ConfirmPassword(ConfirmPassword);
     const user = await userModel.create(req.body);
     res.status(201).json({
       status: "success",
@@ -99,6 +108,9 @@ export const authenticate = async (
     const { email, password } = req.body;
 
     const user = await userModel.authenticate(email, password);
+
+    console.log(user);
+
     const token = jwt.sign({ user }, config.tokenSecret as unknown as string);
 
     return res.status(200).json({

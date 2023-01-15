@@ -10,12 +10,15 @@ class Query {
 
     columns.map((item) => {
       const num: string[] = [];
-      for (const [key, val] of Object.entries(item)) {
+      Object.entries(item).map(([key, value], i) => {
+        if (keys.length < Object.keys(item).length) {
+          keys.push(key);
+        }
         num.push(`$${counter}`);
-        keys.push(key);
-        values.push(val as string | number);
+        values.push(value as string | number);
         counter++;
-      }
+      });
+
       placeHolder.push(`(${num.toString()})`);
     });
 
@@ -42,4 +45,6 @@ class Query {
   }
 }
 
-export default Query;
+const query = new Query();
+
+export default query;

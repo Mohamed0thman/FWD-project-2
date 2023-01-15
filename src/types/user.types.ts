@@ -4,6 +4,5 @@ type User = {
   firstName: string;
   lastName: string;
   password: string;
-  ConfirmPassword: string;
 };
 export default User;

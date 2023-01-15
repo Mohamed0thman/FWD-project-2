@@ -125,7 +125,7 @@ export const deleteOne = async (
     res.json({
       status: "success",
       data: product,
-      message: "User deleted successfully",
+      message: "product deleted successfully",
     });
   } catch (err) {
     next(err);

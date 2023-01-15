@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import Error from "../interfaces/error.interface";
 import config from "../config";
 
@@ -11,26 +11,32 @@ const handleUnauthorizedError = (next: NextFunction) => {
 
 const validateTokenMiddleware = (
   req: Request,
-  _res: Response,
+  res: Response,
   next: NextFunction
 ) => {
   try {
     const authHeader = req.get("Authorization");
-    console.log("authHeader", authHeader);
-
     if (authHeader) {
       const bearer = authHeader.split(" ")[0].toLowerCase();
       const token = authHeader.split(" ")[1];
+
+      console.log(token);
+
       if (token && bearer === "bearer") {
         const decode = jwt.verify(
           token,
+
           config.tokenSecret as unknown as string
-        );
+        ) as JwtPayload;
+
+        console.log("userid ", decode);
+
         if (decode) {
+          res.locals.userId = decode.user.id;
+
           next();
         } else {
           // Failed to authenticate user.
-          handleUnauthorizedError(next);
         }
       } else {
         // token type not bearer
