@@ -21,6 +21,7 @@
 - {app_url}/api/users/:id => delete user (delete) [token required]
 - {app_url}/api/users/:id => show one user (get) [token required]
 - {app_url}/api/users/:id => update user (put) [token required]
+
   ![.signun](./docs/images/signin.PNG)
   ![.login](./docs/images/login.png)
 
@@ -35,11 +36,11 @@
 - {app_url}/api/products/filter?category={kitchen} => get products by category (get) [token required]
 - {app_url}/api/products => delete product (delete) [token required]
 
-  ![.top 5](./docs/images/top.png)
-
 ## Requirements
 
 - create product [name: uniqe ,price: init, category: optinal ]
+
+![.top 5](./docs/images/top.png)
 
 ## Orders
 
@@ -140,4 +141,10 @@ by
 
 ```shell
     npm run lint
+```
+
+- finall massage
+
+```shell
+   happy hack
 ```

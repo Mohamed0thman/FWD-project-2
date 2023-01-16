@@ -11,7 +11,7 @@ class Query {
 
     columns.map((item) => {
       const num: string[] = [];
-      Object.entries(item).map(([key, value], i) => {
+      Object.entries(item).map(([key, value]) => {
         if (keys.length < Object.keys(item).length) {
           keys.push(key);
         }
