@@ -51,7 +51,6 @@ export const getTop = async (
   res: Response,
   next: NextFunction
 ) => {
-
   try {
     Validation.validate({ limit: req.query.limit as string })
       .required()
@@ -68,36 +67,36 @@ export const getTop = async (
   }
 };
 
-export const getMany = async (
+export const getAllProducts = async (
   _: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const products = await productModel.getMany();
+    const products = await productModel.getAllProduct();
     res.json({
       status: "success",
       data: products,
-      message: "product retrieved successfully",
+      message: "get all products Successed",
     });
   } catch (err) {
     next(err);
   }
 };
 
-export const getOne = async (
+export const getOneProduct = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const product = await productModel.getOne(
+    const product = await productModel.getOneProduct(
       req.params.id as unknown as string
     );
     res.json({
       status: "success",
       data: product,
-      message: "product retrieved successfully",
+      message: "get all product Successed",
     });
   } catch (err) {
     next(err);
@@ -116,33 +115,33 @@ export const updateOne = async (
     Validation.validate({ price }).isInt();
     Validation.validate({ category }).isNotEmpty();
 
-    const product = await productModel.updateOne(
+    const product = await productModel.updateOneProduct(
       req.body,
       req.params.id as string
     );
     res.json({
       status: "success",
       data: product,
-      message: "product updated successfully",
+      message: "update product Successed",
     });
   } catch (err) {
     next(err);
   }
 };
 
-export const deleteOne = async (
+export const deleteOneProduct = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const product = await productModel.deleteOne(
+    const product = await productModel.deleteOneProduct(
       req.params.id as unknown as string
     );
     res.json({
       status: "success",
       data: product,
-      message: "product deleted successfully",
+      message: "delete  product Successed",
     });
   } catch (err) {
     next(err);

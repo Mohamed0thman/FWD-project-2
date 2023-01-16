@@ -1,11 +1,11 @@
 import { Router } from "express";
 import * as controllers from "../../controllers/order.controller";
-import authenticationMiddleware from "../../middleware/authentication.middleware";
+import unauthorizedMiddleware from "../../middleware/authentication.middleware";
 
 const routes = Router();
 // api/products
-routes.route("/").post(authenticationMiddleware, controllers.create);
-routes.route("/").patch(authenticationMiddleware, controllers.updateOne);
-routes.route("/:id").delete(authenticationMiddleware, controllers.deleteOne);
+routes.route("/").post(unauthorizedMiddleware, controllers.create);
+routes.route("/").patch(unauthorizedMiddleware, controllers.updateOrder);
+routes.route("/:id").delete(unauthorizedMiddleware, controllers.deleteOrder);
 
 export default routes;

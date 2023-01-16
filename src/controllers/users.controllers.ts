@@ -6,7 +6,7 @@ import Validation from "../helper/validation.helpers";
 
 const userModel = new UserModel();
 
-export const create = async (
+export const createUser = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -18,11 +18,10 @@ export const create = async (
     Validation.validate({ firstName }).required();
     Validation.validate({ lastName }).required();
     Validation.validate({ password })
-
       .required()
       .isPassword()
       ?.ConfirmPassword(ConfirmPassword);
-    const user = await userModel.create(req.body);
+    const user = await userModel.createUser(req.body);
     res.status(201).json({
       status: "success",
       data: { ...user },
@@ -33,41 +32,41 @@ export const create = async (
   }
 };
 
-export const getMany = async (
+export const getAllUsers = async (
   _: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const users = await userModel.getMany();
+    const users = await userModel.getAllUsers();
     res.status(200).json({
       status: "success",
       data: users,
-      message: "User retrieved successfully",
+      message: "get all users successfully",
     });
   } catch (err) {
     next(err);
   }
 };
 
-export const getOne = async (
+export const getOneUser = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const user = await userModel.getOne(req.params.id as unknown as string);
+    const user = await userModel.getOneUser(req.params.id as unknown as string);
     res.status(200).json({
       status: "success",
       data: user,
-      message: "User retrieved successfully",
+      message: "get user by id successfully",
     });
   } catch (err) {
     next(err);
   }
 };
 
-export const updateOne = async (
+export const updateOneUser = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -80,34 +79,36 @@ export const updateOne = async (
     Validation.validate({ firstName }).isNotEmpty();
     Validation.validate({ lastName }).isNotEmpty();
 
-    const user = await userModel.updateOne({ ...req.body }, req.params.id);
+    const user = await userModel.updateOneUser({ ...req.body }, req.params.id);
     res.status(200).json({
       status: "success",
       data: user,
-      message: "User updated successfully",
+      message: "Update User Successed",
     });
   } catch (err) {
     next(err);
   }
 };
 
-export const deleteOne = async (
+export const deleteOneUser = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const user = await userModel.deleteOne(req.params.id as unknown as string);
+    const user = await userModel.deleteOneUser(
+      req.params.id as unknown as string
+    );
     res.status(200).json({
       status: "success",
       data: user,
-      message: "User deleted successfully",
+      message: "Delete User Successed",
     });
   } catch (err) {
     next(err);
   }
 };
-export const authenticate = async (
+export const loginUser = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -115,7 +116,7 @@ export const authenticate = async (
   try {
     const { email, password } = req.body;
 
-    const user = await userModel.authenticate(email, password);
+    const user = await userModel.loginUser(email, password);
 
     const token = jwt.sign({ user }, config.tokenSecret as unknown as string);
 

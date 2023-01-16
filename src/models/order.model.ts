@@ -15,7 +15,6 @@ class OrderModel {
 
       let order_id: string;
 
-
       const activeSql = `select  id from orders where user_id = $1 and status= 'active'`;
 
       const activeOrder = await connection.query(activeSql, [user_Id]);
@@ -25,7 +24,6 @@ class OrderModel {
       } else {
         const orderSql = `INSERT INTO orders ( user_Id) values ($1) RETURNING id`;
         const result = await connection.query(orderSql, [user_Id]);
-
 
         order_id = result.rows[0].id;
       }
@@ -38,7 +36,6 @@ class OrderModel {
       });
 
       const { sql, values } = query.insert("order_product", addOrderId, ["*"]);
-
 
       await connection.query(sql, [...values]);
 
@@ -74,10 +71,7 @@ class OrderModel {
     try {
       const { user_Id } = o;
 
-      const sql = `UPDATE orders
-                        SET status=$1
-                        WHERE user_id = $2 and  status = $3
-                        RETURNING *`;
+      const sql = `UPDATE orders  SET status=$1  WHERE user_id = $2 and  status = $3 RETURNING *`;
 
       const result = await connection.query(sql, [
         "complete",

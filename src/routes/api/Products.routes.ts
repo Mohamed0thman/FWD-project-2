@@ -1,15 +1,17 @@
 import { Router } from "express";
 import * as controllers from "../../controllers/products.controller";
-import authenticationMiddleware from "../../middleware/authentication.middleware";
+import unauthorizedMiddleware from "../../middleware/authentication.middleware";
 
 const routes = Router();
 // api/products
-routes.route("/").post(authenticationMiddleware, controllers.create);
-routes.route("/").get(authenticationMiddleware, controllers.getMany);
-routes.route("/filter").get(authenticationMiddleware, controllers.filter);
-routes.route("/top").get(authenticationMiddleware, controllers.getTop);
-routes.route("/:id").get(authenticationMiddleware, controllers.getOne);
-routes.route("/:id").patch(authenticationMiddleware, controllers.updateOne);
-routes.route("/:id").delete(authenticationMiddleware, controllers.deleteOne);
+routes.route("/").post(unauthorizedMiddleware, controllers.create);
+routes.route("/").get(unauthorizedMiddleware, controllers.getAllProducts);
+routes.route("/filter").get(unauthorizedMiddleware, controllers.filter);
+routes.route("/top").get(unauthorizedMiddleware, controllers.getTop);
+routes.route("/:id").get(unauthorizedMiddleware, controllers.getOneProduct);
+routes.route("/:id").patch(unauthorizedMiddleware, controllers.updateOne);
+routes
+  .route("/:id")
+  .delete(unauthorizedMiddleware, controllers.deleteOneProduct);
 
 export default routes;

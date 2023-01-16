@@ -83,7 +83,7 @@ class ProductModel {
     }
   }
   // get all users
-  async getMany(): Promise<Product[]> {
+  async getAllProduct(): Promise<Product[]> {
     const connection = await db.connect();
 
     try {
@@ -101,7 +101,7 @@ class ProductModel {
     }
   }
   // get specific user
-  async getOne(id: string): Promise<Product> {
+  async getOneProduct(id: string): Promise<Product> {
     const connection = await db.connect();
 
     try {
@@ -125,7 +125,7 @@ class ProductModel {
     }
   }
   // update user
-  async updateOne(p: Product, id: string): Promise<Product[]> {
+  async updateOneProduct(p: Product, id: string): Promise<Product[]> {
     const connection = await db.connect();
 
     try {
@@ -161,7 +161,7 @@ class ProductModel {
   }
 
   // delete user
-  async deleteOne(id: string): Promise<Product> {
+  async deleteOneProduct(id: string): Promise<Product> {
     const connection = await db.connect();
 
     try {

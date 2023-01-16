@@ -13,7 +13,6 @@ export const create = async (
     const { Order_product } = req.body;
     if (!Order_product.length) return throwError("please insert product", 422);
 
-
     const order = await orderModel.create({
       ...req.body,
       user_Id: res.locals.userId,
@@ -28,7 +27,7 @@ export const create = async (
   }
 };
 
-export const updateOne = async (
+export const updateOrder = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -48,7 +47,7 @@ export const updateOne = async (
   }
 };
 
-export const deleteOne = async (
+export const deleteOrder = async (
   req: Request,
   res: Response,
   next: NextFunction

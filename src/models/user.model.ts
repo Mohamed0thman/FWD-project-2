@@ -4,13 +4,13 @@ import bcrypt from "bcrypt";
 import config from "../config";
 import query from "../helper/querybuilder";
 
-const hashPassword = (password: string): string => {
+const encodePassword = (password: string): string => {
   const salt = parseInt(config.salt as string, 10);
   return bcrypt.hashSync(`${password}${config.pepper}`, salt);
 };
 
 class UserModel {
-  async create(u: User): Promise<User> {
+  async createUser(u: User): Promise<User> {
     const connection = await db.connect();
 
     try {
@@ -30,7 +30,7 @@ class UserModel {
         email,
         firstName,
         lastName,
-        hashPassword(password as string),
+        encodePassword(password as string),
       ]);
       return result.rows[0];
     } catch (error) {
@@ -47,12 +47,12 @@ class UserModel {
   }
 
   // get all users
-  async getMany(): Promise<User[]> {
+  async getAllUsers(): Promise<User[]> {
+    const connection = await db.connect();
+
     try {
-      const connection = await db.connect();
       const sql = "SELECT id, email, firstName, lastName from users";
       const result = await connection.query(sql);
-      connection.release();
       return result.rows;
     } catch (error) {
       throw {
@@ -60,10 +60,12 @@ class UserModel {
         message: `Error at retrieving user, ${(error as Error).message}`,
         error: new Error(),
       };
+    } finally {
+      connection.release();
     }
   }
   // get specific user
-  async getOne(id: string): Promise<User> {
+  async getOneUser(id: string): Promise<User> {
     const connection = await db.connect();
 
     try {
@@ -87,24 +89,23 @@ class UserModel {
     }
   }
   // update user
-  async updateOne(u: User, id: string): Promise<User> {
+  async updateOneUser(user: User, id: string): Promise<User> {
     const connection = await db.connect();
-
     try {
+      const { email } = user;
       const existEmailSql = `select  exists (select  count(*) from users 
       where email = $1 having count(*) > 0) as exist`;
-      const existEmail = await connection.query(existEmailSql, [u.email]);
+      const existEmail = await connection.query(existEmailSql, [email]);
 
       if (existEmail.rows[0].exist) {
         throw Error("email is exist");
       }
-      const { sql, values } = query.update("users", u, [
+      const { sql, values } = query.update("users", user, [
         "id",
         "email",
         "firstName",
         "lastName",
       ]);
-
 
       const result = await connection.query(sql, [...values, id]);
 
@@ -124,7 +125,7 @@ class UserModel {
   }
 
   // delete user
-  async deleteOne(id: string): Promise<User> {
+  async deleteOneUser(id: string): Promise<User> {
     const connection = await db.connect();
 
     try {
@@ -133,7 +134,6 @@ class UserModel {
                   RETURNING id, email, firstName,lastName`;
 
       const result = await connection.query(sql, [id]);
-
 
       if (!result.rows.length) {
         throw Error("user not exist");
@@ -151,8 +151,8 @@ class UserModel {
     }
   }
 
-  // authenticate
-  async authenticate(email: string, password: string): Promise<User | null> {
+  // login
+  async loginUser(email: string, password: string): Promise<User | null> {
     const connection = await db.connect();
 
     try {
