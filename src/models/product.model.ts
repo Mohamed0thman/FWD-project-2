@@ -17,7 +17,6 @@ class ProductModel {
       }
 
       const { sql, values } = query.insert("products", [p], ["*"]);
-      console.log(sql);
 
       const result = await connection.query(sql, values);
 

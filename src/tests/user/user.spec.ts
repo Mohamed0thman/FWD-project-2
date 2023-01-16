@@ -177,8 +177,6 @@ describe("users end point", (): void => {
   // delete user api //
   ////////////////////////////////////////////////////////////
   it("delete user", async (): Promise<void> => {
-    console.log("id", userId);
-
     const response = await HttpReqest.delete(`/api/users/${userId}`).set(
       "Authorization",
       token

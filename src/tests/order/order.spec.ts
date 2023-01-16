@@ -65,7 +65,6 @@ describe("order end point", (): void => {
       .set("Authorization", token)
       .send(order)
       .then((res) => {
-        console.log("orderId", res.body.data);
 
         orderId = res.body.data.id;
         return res;
@@ -124,12 +123,10 @@ describe("order end point", (): void => {
   });
 
   it("delete user", async (): Promise<void> => {
-    console.log("id", userId);
 
     const response = await HttpReqest.delete(`/api/users/${userId}`)
       .set("Authorization", token)
       .then((res) => {
-        console.log(res.body);
         return res;
       });
     expect(response.status).toBe(200);

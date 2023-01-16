@@ -51,7 +51,6 @@ export const getTop = async (
   res: Response,
   next: NextFunction
 ) => {
-  console.log("req.params.limit");
 
   try {
     Validation.validate({ limit: req.query.limit as string })

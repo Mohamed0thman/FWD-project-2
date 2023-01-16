@@ -30,19 +30,6 @@ app.use((_req: Request, res: Response, Next: NextFunction) => {
 });
 app.use(errorMiddleware);
 
-// db.connect().then((client) => {
-//   return client
-//     .query("SELECT NOW()")
-//     .then((res) => {
-//       client.release();
-//       // console.log(res);
-//     })
-//     .catch((error: Error) => {
-//       client.release();
-//       // console.log(error.stack);
-//     });
-// });
-
 app.listen(PORT, (): void => {
   console.log(`Application started in http://localhost:${PORT}`);
 });

@@ -13,7 +13,6 @@ export const create = async (
     const { Order_product } = req.body;
     if (!Order_product.length) return throwError("please insert product", 422);
 
-    console.log("dsadsad", req.body);
 
     const order = await orderModel.create({
       ...req.body,

@@ -238,7 +238,6 @@ describe("products end point", (): void => {
   });
 
   it("delete user", async (): Promise<void> => {
-    console.log("id", userId);
 
     const response = await HttpReqest.delete(`/api/users/${userId}`).set(
       "Authorization",

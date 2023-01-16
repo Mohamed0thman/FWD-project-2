@@ -15,7 +15,6 @@ class OrderModel {
 
       let order_id: string;
 
-      console.log(user_Id, Order_product);
 
       const activeSql = `select  id from orders where user_id = $1 and status= 'active'`;
 
@@ -27,7 +26,6 @@ class OrderModel {
         const orderSql = `INSERT INTO orders ( user_Id) values ($1) RETURNING id`;
         const result = await connection.query(orderSql, [user_Id]);
 
-        console.log("result", result.rows[0]);
 
         order_id = result.rows[0].id;
       }
@@ -41,7 +39,6 @@ class OrderModel {
 
       const { sql, values } = query.insert("order_product", addOrderId, ["*"]);
 
-      console.log("sql, values", sql, values);
 
       await connection.query(sql, [...values]);
 
@@ -76,7 +73,6 @@ class OrderModel {
 
     try {
       const { user_Id } = o;
-      console.log(user_Id);
 
       const sql = `UPDATE orders
                         SET status=$1

@@ -20,7 +20,6 @@ const validateTokenMiddleware = (
       const bearer = authHeader.split(" ")[0].toLowerCase();
       const token = authHeader.split(" ")[1];
 
-      console.log(token);
 
       if (token && bearer === "bearer") {
         const decode = jwt.verify(
@@ -29,7 +28,6 @@ const validateTokenMiddleware = (
           config.tokenSecret as unknown as string
         ) as JwtPayload;
 
-        console.log("userid ", decode);
 
         if (decode) {
           res.locals.userId = decode.user.id;

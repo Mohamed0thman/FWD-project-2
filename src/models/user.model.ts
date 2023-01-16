@@ -6,8 +6,6 @@ import query from "../helper/querybuilder";
 
 const hashPassword = (password: string): string => {
   const salt = parseInt(config.salt as string, 10);
-  console.log(`${password}${config.pepper}`);
-
   return bcrypt.hashSync(`${password}${config.pepper}`, salt);
 };
 
@@ -107,7 +105,6 @@ class UserModel {
         "lastName",
       ]);
 
-      console.log(sql, values);
 
       const result = await connection.query(sql, [...values, id]);
 
@@ -129,7 +126,6 @@ class UserModel {
   // delete user
   async deleteOne(id: string): Promise<User> {
     const connection = await db.connect();
-    console.log("id", id);
 
     try {
       const sql = `DELETE FROM users 
@@ -138,7 +134,6 @@ class UserModel {
 
       const result = await connection.query(sql, [id]);
 
-      console.log("resultresultresultresult", result.rows);
 
       if (!result.rows.length) {
         throw Error("user not exist");
