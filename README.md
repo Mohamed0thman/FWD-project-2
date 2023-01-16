@@ -79,7 +79,7 @@ by
 
 - copy .env.example to .env
 
-  ![.env](./docs/images/env2.png)
+  ![.env](./docs/images/env.png)
 
 ## Available Scripts
 
