@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import { throwError } from "../helper/error.helper";
 import OrderModel from "../models/order.model";
 
 const orderModel = new OrderModel();
@@ -9,15 +10,18 @@ export const create = async (
   next: NextFunction
 ) => {
   try {
-    console.log("dsadsadasd", res.locals.userId);
+    const { Order_product } = req.body;
+    if (!Order_product.length) return throwError("please insert product", 422);
 
-    const product = await orderModel.create({
+    console.log("dsadsad", req.body);
+
+    const order = await orderModel.create({
       ...req.body,
       user_Id: res.locals.userId,
     });
     res.json({
       status: "success",
-      data: { ...product },
+      data: { ...order },
       message: "product created successfully",
     });
   } catch (err) {
@@ -31,13 +35,13 @@ export const updateOne = async (
   next: NextFunction
 ) => {
   try {
-    const product = await orderModel.updateOne({
+    const order = await orderModel.updateOne({
       ...req.body,
       user_Id: res.locals.userId,
     });
     res.json({
       status: "success",
-      data: product,
+      data: order,
       message: "product updated successfully",
     });
   } catch (err) {
@@ -51,12 +55,12 @@ export const deleteOne = async (
   next: NextFunction
 ) => {
   try {
-    const product = await orderModel.deleteOne(
+    const order = await orderModel.deleteOne(
       req.params.id as unknown as string
     );
     res.json({
       status: "success",
-      data: product,
+      data: order,
       message: "User deleted successfully",
     });
   } catch (err) {

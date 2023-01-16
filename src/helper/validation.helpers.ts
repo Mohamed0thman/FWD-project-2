@@ -1,3 +1,5 @@
+import { throwError } from "./error.helper";
+
 class Validate {
   quary: { [x: string]: string | number };
   key: string;
@@ -10,7 +12,7 @@ class Validate {
 
   required(): this {
     if (!this.value) {
-      throw new Error(`${this.key} is required`);
+      throwError(`${this.key} is required`, 422);
     }
     return this;
   }
@@ -21,13 +23,13 @@ class Validate {
       /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
 
     if (this.value.toString().match(validRegex) === null) {
-      throw Error("pleast insert valid  Email");
+      throwError(`pleast insert valid  Email`, 422);
     }
     return this;
   }
   ConfirmPassword(password: string) {
     if (this.value !== password) {
-      throw Error("password not match");
+      throwError(`password not match`, 422);
     }
     return this;
   }
@@ -36,11 +38,11 @@ class Validate {
     const strongRegex = strong ? strong : new RegExp("^(?=.*[a-z])(?=.*[0-9])");
     const value = this.value.toString();
     if (value.length > max) {
-      throw Error(`password must be smaller than ${max} characters`);
+      throwError(`password must be smaller than ${max} characters`, 422);
     } else if (value.length < min) {
-      throw Error(`password must be biger than ${min} characters`);
+      throwError(`password must be biger than ${min} characters`, 422);
     } else if (value.match(strongRegex) === null) {
-      throw Error(`password must have numbers and characters`);
+      throwError(`password must have numbers and characters`, 422);
     }
 
     return this;
@@ -48,7 +50,7 @@ class Validate {
   isNotEmpty(): this | undefined {
     if (this.value === undefined) return;
     if (!this.value.toString().length) {
-      throw Error(`${this.key} is empty `);
+      throwError(`${this.key} is empty `, 422);
     }
     return this;
   }
@@ -56,7 +58,7 @@ class Validate {
     if (this.value === undefined) return;
 
     if (/^\d+$/.test(this.value as string)) return this;
-    throw Error(`${this.key} should be integer`);
+    throwError(`${this.key} should be integer`, 422);
   }
 }
 

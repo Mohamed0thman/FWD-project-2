@@ -1,7 +1,8 @@
 class Query {
   insert(
     table: string,
-    columns: { [x: string]: unknown }[]
+    columns: { [x: string]: unknown }[],
+    returning: string[] = []
   ): { sql: string; values: unknown[] } {
     let counter = 1;
     const keys: string[] = [];
@@ -23,13 +24,14 @@ class Query {
     });
 
     const sql = `INSERT INTO ${table} (${keys.toString()})
-    values ${placeHolder.toString()} RETURNING*`;
+    values ${placeHolder.toString()} RETURNING ${returning?.toString()}`;
     return { sql, values };
   }
 
   update(
     table: string,
-    column: { [x: string]: unknown }
+    column: { [x: string]: unknown },
+    returning: string[] = []
   ): { sql: string; values: unknown[] } {
     const values: (string | number)[] = [];
     const placeHolders: string[] = [];
@@ -40,7 +42,7 @@ class Query {
     const sql = `UPDATE ${table}
     SET ${placeHolders.toString()}
     WHERE id=$${placeHolders.length + 1}
-    RETURNING id, name, price, category`;
+    RETURNING ${returning?.toString()}`;
     return { sql, values };
   }
 }

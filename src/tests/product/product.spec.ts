@@ -4,8 +4,8 @@ const HttpReqest = supertest(app);
 
 describe("products end point", (): void => {
   let productId: string;
-  let userId: string;
   let token: string;
+  let userId: string;
 
   const name = "chair";
   const price = 200;
@@ -84,7 +84,7 @@ describe("products end point", (): void => {
       });
     expect(response.status).toBe(422);
   });
-  it("create product should fail could not create not user ", async (): Promise<void> => {
+  it("create product should fail not a user please login ", async (): Promise<void> => {
     const response = await HttpReqest.delete(`/api/products/${productId}`)
       .set("Authorization", "123213213")
       .send({
@@ -234,6 +234,16 @@ describe("products end point", (): void => {
       token
     );
 
+    expect(response.status).toBe(200);
+  });
+
+  it("delete user", async (): Promise<void> => {
+    console.log("id", userId);
+
+    const response = await HttpReqest.delete(`/api/users/${userId}`).set(
+      "Authorization",
+      token
+    );
     expect(response.status).toBe(200);
   });
 });

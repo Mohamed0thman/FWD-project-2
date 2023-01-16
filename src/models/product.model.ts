@@ -1,6 +1,5 @@
 import db from "../db";
 import query from "../helper/querybuilder";
-import Validation from "../helper/validation.helpers";
 import Product from "../types/product.types";
 class ProductModel {
   async create(p: Product): Promise<Product[]> {
@@ -17,7 +16,8 @@ class ProductModel {
         throw Error("product name is exist");
       }
 
-      const { sql, values } = query.insert("products", [p]);
+      const { sql, values } = query.insert("products", [p], ["*"]);
+      console.log(sql);
 
       const result = await connection.query(sql, values);
 
@@ -62,9 +62,10 @@ class ProductModel {
 
     try {
       const sql = `
-      SELECT sum( op.quantity) as total_quantity, p.name, p.id  FROM order_product AS op
+      SELECT sum( op.quantity) as total_quantity, p.name, p.id  
+      FROM order_product AS op
       INNER JOIN products AS p ON p.id = op.product_id
-      GROUP BY op.order_id , p.name, p.id
+      GROUP BY  p.name, p.id
       ORDER BY total_quantity desc
       LIMIT $1
       `;
@@ -141,7 +142,7 @@ class ProductModel {
         }
       }
 
-      const { sql, values } = query.update("products", p);
+      const { sql, values } = query.update("products", p, ["*"]);
 
       const result = await connection.query(sql, [...values, id]);
 

@@ -1,55 +1,34 @@
 import supertest from "supertest";
 import app from "../../index";
-import User from "../../types/user.types";
 const HttpReqest = supertest(app);
 
 describe("users end point", (): void => {
   let userId: string;
   let token: string;
 
-  const userOne: User = {
-    email: "user1@gmail.com",
-    firstName: "mohamed",
-    lastName: "othman",
-    password: "123456asdf",
-    ConfirmPassword: "123456asdf",
-  };
-
-  const userTwo: User = {
-    email: "user2@gmail.com",
-    firstName: "mohamed",
-    lastName: "othman",
-    password: "123456asdf",
-    ConfirmPassword: "123456asdf",
-  };
-
   ///////////////////////////////////////////////////////////
   // signup api //
   ////////////////////////////////////////////////////////////
   it("create new user", async (): Promise<void> => {
-    const response = await HttpReqest.post("/api/users/signup")
-      .send(userOne)
-      .then((res) => {
-        userId = res.body.data.id;
-        console.log(res.body.data.id);
-        return res;
-      });
-    expect(response.status).toBe(201);
-  });
+    const response = await HttpReqest.post("/api/users/signup").send({
+      email: "user1@gmail.com",
+      firstName: "mohamed",
+      lastName: "othman",
+      password: "123456asdf",
+      ConfirmPassword: "123456asdf",
+    });
 
-  it("create new user two", async (): Promise<void> => {
-    const response = await HttpReqest.post("/api/users/signup")
-      .send(userTwo)
-      .then((res) => {
-        userId = res.body.data.id;
-        console.log(res.body.data.id);
-        return res;
-      });
     expect(response.status).toBe(201);
   });
 
   it("should fail email already exists ", async (): Promise<void> => {
-    const response = await HttpReqest.post("/api/users/signup").send(userOne);
+    const response = await HttpReqest.post("/api/users/signup").send({
+      email: "user1@gmail.com",
+      firstName: "mohamed",
+      lastName: "othman",
+      password: "123456asdf",
+      ConfirmPassword: "123456asdf",
+    });
     expect(response.status).toBe(401);
   });
 
@@ -61,7 +40,7 @@ describe("users end point", (): void => {
       password: "123456asdf",
       ConfirmPassword: "123456qwer",
     });
-    expect(response.status).toBe(401);
+    expect(response.status).toBe(422);
   });
 
   it("should fail invalid email address", async (): Promise<void> => {
@@ -72,7 +51,7 @@ describe("users end point", (): void => {
       password: "123456asdf",
       ConfirmPassword: "123456asdf",
     });
-    expect(response.status).toBe(401);
+    expect(response.status).toBe(422);
   });
 
   it("should fail  email is required", async (): Promise<void> => {
@@ -82,7 +61,7 @@ describe("users end point", (): void => {
       password: "123456asdf",
       ConfirmPassword: "123456asdf",
     });
-    expect(response.status).toBe(401);
+    expect(response.status).toBe(422);
   });
 
   it("should fail  password should contain at least character", async (): Promise<void> => {
@@ -93,7 +72,7 @@ describe("users end point", (): void => {
       password: "123456",
       ConfirmPassword: "123456",
     });
-    expect(response.status).toBe(401);
+    expect(response.status).toBe(422);
   });
 
   ///////////////////////////////////////////////////////////
@@ -117,11 +96,12 @@ describe("users end point", (): void => {
   it("user login in ", async (): Promise<void> => {
     const response = await HttpReqest.post("/api/users/signin")
       .send({
-        email: userOne.email,
-        password: userOne.password,
+        email: "user1@gmail.com",
+        password: "123456asdf",
       })
       .then((res) => {
         token = `Bearer ${res.body.data.token}`;
+        userId = res.body.data.id;
         return res;
       });
     expect(response.status).toBe(200);
@@ -179,18 +159,18 @@ describe("users end point", (): void => {
   it("should fail could not update email email is exist ", async (): Promise<void> => {
     const response = await HttpReqest.patch(`/api/users/${userId}`)
       .send({
-        email: "user2@gmail.com",
+        email: "user1@gmail.com",
       })
       .set("Authorization", token);
     expect(response.status).toBe(401);
   });
-  it("should fail  could not update email email not valid ", async (): Promise<void> => {
+  it("should fail could not update email email not valid ", async (): Promise<void> => {
     const response = await HttpReqest.patch(`/api/users/${userId}`)
       .send({
         email: "test2",
       })
       .set("Authorization", token);
-    expect(response.status).toBe(401);
+    expect(response.status).toBe(422);
   });
 
   ///////////////////////////////////////////////////////////

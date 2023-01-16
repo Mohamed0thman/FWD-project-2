@@ -73,6 +73,9 @@ class UserModel {
       WHERE id=($1)`;
 
       const result = await connection.query(sql, [id]);
+      if (!result.rows.length) {
+        throw Error("user not exist");
+      }
 
       return result.rows[0];
     } catch (error) {
@@ -97,7 +100,14 @@ class UserModel {
       if (existEmail.rows[0].exist) {
         throw Error("email is exist");
       }
-      const { sql, values } = query.update("users", u);
+      const { sql, values } = query.update("users", u, [
+        "id",
+        "email",
+        "firstName",
+        "lastName",
+      ]);
+
+      console.log(sql, values);
 
       const result = await connection.query(sql, [...values, id]);
 
@@ -119,6 +129,7 @@ class UserModel {
   // delete user
   async deleteOne(id: string): Promise<User> {
     const connection = await db.connect();
+    console.log("id", id);
 
     try {
       const sql = `DELETE FROM users 
@@ -126,6 +137,8 @@ class UserModel {
                   RETURNING id, email, firstName,lastName`;
 
       const result = await connection.query(sql, [id]);
+
+      console.log("resultresultresultresult", result.rows);
 
       if (!result.rows.length) {
         throw Error("user not exist");
@@ -159,8 +172,6 @@ class UserModel {
         `${password}${config.pepper}`,
         hashPassword
       );
-      console.log(isPasswordValid);
-
       if (!isPasswordValid) {
         throw Error("password not valid");
       }
