@@ -1,7 +1,7 @@
 import dotnv from "dotenv";
 
 dotnv.config();
-const { NODE_ENV, BCRIPT_PASSWORD, SALT_ROUNDS, TOKEN_SECRET, PORT } =
+const { NODE_ENV, SECRET_BCYPT_KEY, SALT_ROUNDS, SECRET_Token_kEY, PORT } =
   process.env;
 
 function env(key: string, defaultValue = ""): string {
@@ -12,7 +12,7 @@ export default {
   env,
   PORT,
   NODE_ENV,
-  pepper: BCRIPT_PASSWORD,
+  pepperKey: SECRET_BCYPT_KEY,
   salt: SALT_ROUNDS,
-  tokenSecret: TOKEN_SECRET,
+  tokenSecretKey: SECRET_Token_kEY,
 };

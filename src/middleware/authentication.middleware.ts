@@ -21,7 +21,7 @@ const unauthorizedMiddleware = (
       if (token) {
         jwt.verify(
           token,
-          config.tokenSecret as unknown as string,
+          config.tokenSecretKey as unknown as string,
           async (err, decode) => {
             if (!err) {
               const decoded = decode as JwtPayload;

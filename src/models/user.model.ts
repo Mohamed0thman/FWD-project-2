@@ -5,8 +5,8 @@ import config from "../config";
 import query from "../helper/querybuilder";
 
 const encodePassword = (password: string): string => {
-  const salt = parseInt(config.salt as string, 10);
-  return bcrypt.hashSync(`${password}${config.pepper}`, salt);
+  const saltRound = parseInt(config.salt as string, 10);
+  return bcrypt.hashSync(`${password}${config.pepperKey}`, saltRound);
 };
 
 class UserModel {
@@ -164,7 +164,7 @@ class UserModel {
       }
       const { password: hashPassword } = result.rows[0];
       const isPasswordValid = bcrypt.compareSync(
-        `${password}${config.pepper}`,
+        `${password}${config.pepperKey}`,
         hashPassword
       );
       if (!isPasswordValid) {

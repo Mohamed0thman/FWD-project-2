@@ -118,7 +118,7 @@ export const loginUser = async (
 
     const user = await userModel.loginUser(email, password);
 
-    const token = jwt.sign({ user }, config.tokenSecret as unknown as string);
+    const token = jwt.sign({ user }, config.tokenSecretKey as unknown as string);
 
     return res.status(200).json({
       status: "success",
