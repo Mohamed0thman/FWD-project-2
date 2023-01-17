@@ -2,11 +2,11 @@ import db from "../db";
 import query from "../helper/querybuilder";
 import Product from "../types/product.types";
 class ProductModel {
-  async create(p: Product): Promise<Product[]> {
+  async create(product: Product): Promise<Product[]> {
     const connection = await db.connect();
 
     try {
-      const { name } = p;
+      const { name } = product;
 
       const existsql = `select  exists (select  count(*) from products
       where name = $1 having count(*) > 0) as exist`;
@@ -16,7 +16,7 @@ class ProductModel {
         throw Error("product name is exist");
       }
 
-      const { sql, values } = query.insert("products", [p], ["*"]);
+      const { sql, values } = query.insert("products", [product], ["*"]);
 
       const result = await connection.query(sql, values);
 
@@ -24,7 +24,7 @@ class ProductModel {
     } catch (error) {
       throw {
         status: 422,
-        message: `Could not create product ${p.name}, ${
+        message: `Could not create product ${product.name}, ${
           (error as Error).message
         }`,
         error: new Error(),
@@ -125,11 +125,11 @@ class ProductModel {
     }
   }
   // update user
-  async updateOneProduct(p: Product, id: string): Promise<Product[]> {
+  async updateOneProduct(product: Product, id: string): Promise<Product[]> {
     const connection = await db.connect();
 
     try {
-      const { name } = p;
+      const { name } = product;
 
       if (name) {
         const existNameSql = `select  exists (select  count(*) from products
@@ -141,7 +141,7 @@ class ProductModel {
         }
       }
 
-      const { sql, values } = query.update("products", p, ["*"]);
+      const { sql, values } = query.update("products", product, ["*"]);
 
       const result = await connection.query(sql, [...values, id]);
 

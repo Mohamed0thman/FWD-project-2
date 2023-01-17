@@ -5,13 +5,13 @@ import { Order } from "../types/order.types";
 
 class OrderModel {
   // create order
-  async create(o: Order): Promise<Order[] | undefined> {
+  async create(order: Order): Promise<Order[] | undefined> {
     const connection = await db.connect();
 
     try {
       await connection.query("BEGIN");
 
-      const { user_Id, Order_product } = o;
+      const { user_Id, Order_product } = order;
 
       let order_id: string;
 
@@ -65,11 +65,11 @@ class OrderModel {
   }
 
   // update order status to complite
-  async updateOne(o: Order): Promise<Order | undefined> {
+  async updateOne(order: Order): Promise<Order | undefined> {
     const connection = await db.connect();
 
     try {
-      const { user_Id } = o;
+      const { user_Id } = order;
 
       const sql = `UPDATE orders  SET status=$1  WHERE user_id = $2 and  status = $3 RETURNING *`;
 
