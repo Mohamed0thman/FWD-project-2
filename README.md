@@ -27,13 +27,13 @@
 
 ### Products
 
-- {app_url}/api/products => get all products (get) [token required]
+- {app_url}/api/products => get all products (get)
 - {app_url}/api/products => create new product (post) [token required]
 - {app_url}/api/products/:id => delete product (delete) [token required]
-- {app_url}/api/products/:id => show product (get) [token required]
+- {app_url}/api/products/:id => show product (get)
 - {app_url}/api/products/:id => update product (put) [token required]
-- {app_url}/api/products/top?limit={insert intger value like 5} => update product (get) [token required]
-- {app_url}/api/products/filter?category={kitchen} => get products by category (get) [token required]
+- {app_url}/api/products/top?limit={insert intger value like 5} => update product (get)
+- {app_url}/api/products/filter?category={kitchen} => get products by category (get)
 - {app_url}/api/products => delete product (delete) [token required]
 
 ## Requirements
