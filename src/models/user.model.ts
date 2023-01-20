@@ -14,7 +14,7 @@ class UserModel {
     const connection = await db.connect();
 
     try {
-      const { email, firstName, lastName, password } = u;
+      const { email, firstname, lastname, password } = u;
 
       const existEmailSql = `select  exists (select  count(*) from users 
       where email = $1 having count(*) > 0) as exist`;
@@ -28,8 +28,8 @@ class UserModel {
       RETURNING id, email, firstName, lastName`;
       const result = await connection.query(sql, [
         email,
-        firstName,
-        lastName,
+        firstname,
+        lastname,
         encodePassword(password as string),
       ]);
       return result.rows[0];

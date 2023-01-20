@@ -77,6 +77,25 @@ by
     CREATE DATABASE {your_database_name} WITH OWNER {your_user_name} ENCODING = 'utf8';
 ```
 
+![database](./docs/images/database-fwd.PNG)
+
+![tables](./docs/images/data-table.PNG)
+
+- users schema
+  ![user table](./docs/images/users%20table.PNG)
+
+- products schema
+
+  ![product table](./docs/images/products-table.PNG)
+
+- order schema
+
+  ![order table](./docs/images/orders-table.PNG)
+
+- order_products schema
+
+  ![order products table](./docs/images/order-products.PNG)
+
 - copy .env.example to .env
 
   ![.env](./docs/images/env.png)

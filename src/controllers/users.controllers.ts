@@ -12,11 +12,11 @@ export const createUser = async (
   next: NextFunction
 ) => {
   try {
-    const { email, firstName, lastName, password, ConfirmPassword } = req.body;
+    const { email, firstname, lastname, password, ConfirmPassword } = req.body;
 
     Validation.validate({ email }).required().isEmail();
-    Validation.validate({ firstName }).required();
-    Validation.validate({ lastName }).required();
+    Validation.validate({ firstname }).required();
+    Validation.validate({ lastname }).required();
     Validation.validate({ password })
       .required()
       .isPassword()
@@ -72,12 +72,12 @@ export const updateOneUser = async (
   next: NextFunction
 ) => {
   try {
-    const { email, firstName, lastName, password } = req.body;
+    const { email, firstname, lastname, password } = req.body;
 
     Validation.validate({ email }).isNotEmpty()?.isEmail();
     Validation.validate({ password }).isNotEmpty()?.isPassword();
-    Validation.validate({ firstName }).isNotEmpty();
-    Validation.validate({ lastName }).isNotEmpty();
+    Validation.validate({ firstname }).isNotEmpty();
+    Validation.validate({ lastname }).isNotEmpty();
 
     const user = await userModel.updateOneUser({ ...req.body }, req.params.id);
     res.status(200).json({
@@ -118,7 +118,10 @@ export const loginUser = async (
 
     const user = await userModel.loginUser(email, password);
 
-    const token = jwt.sign({ user }, config.tokenSecretKey as unknown as string);
+    const token = jwt.sign(
+      { user },
+      config.tokenSecretKey as unknown as string
+    );
 
     return res.status(200).json({
       status: "success",

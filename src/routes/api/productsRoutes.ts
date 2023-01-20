@@ -4,11 +4,13 @@ import unauthorizedMiddleware from "../../middleware/authentication.middleware";
 
 const routes = Router();
 // api/products
+routes.route("/").get(controllers.getAllProducts);
+routes.route("/filter").get(controllers.filter);
+routes.route("/top").get(controllers.getTop);
+routes.route("/:id").get(controllers.getOneProduct);
+
+///unauthorized
 routes.route("/").post(unauthorizedMiddleware, controllers.create);
-routes.route("/").get(unauthorizedMiddleware, controllers.getAllProducts);
-routes.route("/filter").get(unauthorizedMiddleware, controllers.filter);
-routes.route("/top").get(unauthorizedMiddleware, controllers.getTop);
-routes.route("/:id").get(unauthorizedMiddleware, controllers.getOneProduct);
 routes.route("/:id").patch(unauthorizedMiddleware, controllers.updateOne);
 routes
   .route("/:id")

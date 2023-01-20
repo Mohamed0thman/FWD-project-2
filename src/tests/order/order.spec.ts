@@ -31,8 +31,8 @@ describe("order end point", (): void => {
   it("create new user", async (): Promise<void> => {
     const response = await HttpReqest.post("/api/users/signup").send({
       email: "order@gmail.com",
-      firstName: "ahmed",
-      lastName: "othman",
+      firstname: "ahmed",
+      lastname: "othman",
       password: "123456asdf",
       ConfirmPassword: "123456asdf",
     });

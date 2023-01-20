@@ -12,8 +12,8 @@ describe("users end point", (): void => {
   it("create new user", async (): Promise<void> => {
     const response = await HttpReqest.post("/api/users/signup").send({
       email: "user1@gmail.com",
-      firstName: "mohamed",
-      lastName: "othman",
+      firstname: "mohamed",
+      lastname: "othman",
       password: "123456asdf",
       ConfirmPassword: "123456asdf",
     });
@@ -24,8 +24,8 @@ describe("users end point", (): void => {
   it("should fail email already exists ", async (): Promise<void> => {
     const response = await HttpReqest.post("/api/users/signup").send({
       email: "user1@gmail.com",
-      firstName: "mohamed",
-      lastName: "othman",
+      firstname: "mohamed",
+      lastname: "othman",
       password: "123456asdf",
       ConfirmPassword: "123456asdf",
     });
@@ -35,8 +35,8 @@ describe("users end point", (): void => {
   it("should fail password does not match confirm password", async (): Promise<void> => {
     const response = await HttpReqest.post("/api/users/signup").send({
       email: "user3@gmail.com",
-      firstName: "mohamed",
-      lastName: "othman",
+      firstname: "mohamed",
+      lastname: "othman",
       password: "123456asdf",
       ConfirmPassword: "123456qwer",
     });
@@ -46,8 +46,8 @@ describe("users end point", (): void => {
   it("should fail invalid email address", async (): Promise<void> => {
     const response = await HttpReqest.post("/api/users/signup").send({
       email: "user3",
-      firstName: "mohamed",
-      lastName: "othman",
+      firstname: "mohamed",
+      lastname: "othman",
       password: "123456asdf",
       ConfirmPassword: "123456asdf",
     });
@@ -56,8 +56,8 @@ describe("users end point", (): void => {
 
   it("should fail  email is required", async (): Promise<void> => {
     const response = await HttpReqest.post("/api/users/signup").send({
-      firstName: "mohamed",
-      lastName: "othman",
+      firstname: "mohamed",
+      lastname: "othman",
       password: "123456asdf",
       ConfirmPassword: "123456asdf",
     });
@@ -67,8 +67,8 @@ describe("users end point", (): void => {
   it("should fail  password should contain at least character", async (): Promise<void> => {
     const response = await HttpReqest.post("/api/users/signup").send({
       email: "user3@gmail.com",
-      firstName: "mohamed",
-      lastName: "othman",
+      firstname: "mohamed",
+      lastname: "othman",
       password: "123456",
       ConfirmPassword: "123456",
     });
@@ -149,8 +149,8 @@ describe("users end point", (): void => {
   it("update user first and last name", async (): Promise<void> => {
     const response = await HttpReqest.patch(`/api/users/${userId}`)
       .send({
-        firstName: "ahmed",
-        lastName: "osman",
+        firstname: "ahmed",
+        lastname: "osman",
       })
       .set("Authorization", token);
     expect(response.status).toBe(200);

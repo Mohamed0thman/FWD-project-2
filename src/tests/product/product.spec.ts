@@ -18,8 +18,8 @@ describe("products end point", (): void => {
   it("create new user", async (): Promise<void> => {
     const response = await HttpReqest.post("/api/users/signup").send({
       email: "product@gmail.com",
-      firstName: "ahmed",
-      lastName: "othman",
+      firstname: "ahmed",
+      lastname: "othman",
       password: "123456asdf",
       ConfirmPassword: "123456asdf",
     });
@@ -148,14 +148,7 @@ describe("products end point", (): void => {
 
     expect(response.status).toBe(200);
   });
-  it("get all product fail not user please login", async (): Promise<void> => {
-    const response = await HttpReqest.get(`/api/products`).set(
-      "Authorization",
-      "dasdsadasd"
-    );
 
-    expect(response.status).toBe(401);
-  });
   ///////////////////////////////////////////////////////////
   // get only one product  api //
   ////////////////////////////////////////////////////////////

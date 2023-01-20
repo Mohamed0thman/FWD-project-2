@@ -5,7 +5,7 @@ import { Order } from "../types/order.types";
 
 class OrderModel {
   // create order
-  async create(order: Order): Promise<Order[] | undefined> {
+  async create(order: Order): Promise<Order | undefined> {
     const connection = await db.connect();
 
     try {
@@ -65,12 +65,10 @@ class OrderModel {
   }
 
   // update order status to complite
-  async updateOne(order: Order): Promise<Order | undefined> {
+  async updateOne(user_Id: string): Promise<Order | undefined> {
     const connection = await db.connect();
 
     try {
-      const { user_Id } = order;
-
       const sql = `UPDATE orders  SET status=$1  WHERE user_id = $2 and  status = $3 RETURNING *`;
 
       const result = await connection.query(sql, [
@@ -78,6 +76,8 @@ class OrderModel {
         user_Id,
         "active",
       ]);
+
+      console.log("user_Id", user_Id);
 
       if (!result.rows.length) {
         throw Error("order not exist");

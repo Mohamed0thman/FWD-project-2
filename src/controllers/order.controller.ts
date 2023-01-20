@@ -33,10 +33,7 @@ export const updateOrder = async (
   next: NextFunction
 ) => {
   try {
-    const order = await orderModel.updateOne({
-      ...req.body,
-      user_Id: res.locals.userId,
-    });
+    const order = await orderModel.updateOne(res.locals.userId as string);
     res.json({
       status: "success",
       data: order,

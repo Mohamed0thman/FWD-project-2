@@ -2,7 +2,7 @@ import db from "../db";
 import query from "../helper/querybuilder";
 import Product from "../types/product.types";
 class ProductModel {
-  async create(product: Product): Promise<Product[]> {
+  async create(product: Product): Promise<Product> {
     const connection = await db.connect();
 
     try {
@@ -20,7 +20,7 @@ class ProductModel {
 
       const result = await connection.query(sql, values);
 
-      return result.rows[0] as Product[];
+      return result.rows[0];
     } catch (error) {
       throw {
         status: 422,
@@ -125,7 +125,7 @@ class ProductModel {
     }
   }
   // update user
-  async updateOneProduct(product: Product, id: string): Promise<Product[]> {
+  async updateOneProduct(product: Product, id: string): Promise<Product> {
     const connection = await db.connect();
 
     try {
@@ -140,15 +140,20 @@ class ProductModel {
           throw Error("product name is exist");
         }
       }
+      console.log("product", product);
 
       const { sql, values } = query.update("products", product, ["*"]);
 
+      console.log(sql, values);
+
       const result = await connection.query(sql, [...values, id]);
+
+      console.log(result.rows);
 
       if (!result.rows.length) {
         throw Error("product not exist");
       }
-      return result.rows[0] as Product[];
+      return result.rows[0];
     } catch (error) {
       throw {
         status: 422,
